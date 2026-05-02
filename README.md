@@ -37,6 +37,9 @@ Detail/flow screens (product detail, group chat, live stream, bargain, etc.) pus
 
 ### 1.2 Onboarding gate (cold start, first run only)
 
+> **What it is:** A 7-screen first-run flow (splash → 4 swipeable value-prop slides → phone → OTP → name+area).
+> **Why it exists:** First impressions are the entire pitch. Bangladesh users don't trust money apps blindly — the slides explain *why* group buying is safe + cheap before asking for a phone number. Photo + area let us personalize home and seed the user into a relevant para.
+
 Order: **Splash (2s) → 4 colored swipeable slides → Phone → OTP → Profile**.
 
 Reference impl: `lib/v6/auth/v6_login_flow.dart`. Pixel-faithful port of the v6 HTML mockup (`sd-onboarding.jsx`).
@@ -63,6 +66,9 @@ EN ↔ BN toggle in every screen's top bar (`SdLangToggle` widget). Persists in 
 ---
 
 ## 2. Home tab (`home_screen.dart`)
+
+> **What it is:** The discovery surface — banners, categories, flash deals, group deals, live streams, and entry tiles to every gamification feature.
+> **Why it exists:** Group-buying value is invisible until you see active groups filling. The home page makes "join a group right now" the first thing every user sees, with social proof (X people joined, Y minutes left) on every card.
 
 The discovery hub. Scrollable feed:
 
@@ -99,6 +105,9 @@ Test cards for landing screens (Bargain link, Eid Salami link, Group chat previe
 
 ## 3. Product detail (`product_screen.dart`)
 
+> **What it is:** Full SKU page — pricing in solo and group modes, tiered group savings, open groups to join, seller info, reviews, Q&A, and the bottom CTA bar.
+> **Why it exists:** This is where intent converts. The same screen handles two business models (solo CoD purchase vs. join-a-group), so the mode toggle + sticky CTA bar must make the cheaper option (group) obvious without burying the simpler one (solo).
+
 The richest screen. Sections top-to-bottom:
 
 ### 3.1 Top bar
@@ -115,6 +124,10 @@ Top of details — 2 tabs. Default = Group for group/flash products, Solo for ex
 - Live countdown timer
 
 ### 3.4 Tiered pricing card 🎯
+
+> **What it is:** A 3-tile price ladder: 3 people / 5 people / 10 people, each unlocking a deeper discount.
+> **Why it exists:** Pure single-tier group buying caps virality at the threshold. Tiers turn every additional friend into measurable savings ("invite 2 more, drop ৳40 each"), keeping the share loop alive even after the group is technically full.
+
 "যত বেশি বন্ধু, তত কম দাম" — More friends, lower price.
 
 3 tiles:
@@ -125,11 +138,19 @@ Top of details — 2 tabs. Default = Group for group/flash products, Solo for ex
 | 3 (best) | red bg, solid yellow border, **🔥 সেরা floating chip top-right** | "১০ জন" white | yellow ৳233 | "সাশ্রয় ৳247" white-translucent |
 
 ### 3.5 Subscribe & Save
+
+> **What it is:** Recurring auto-delivery for grocery basics (rice, oil, milk, eggs, dal) at ~10% off the solo price.
+> **Why it exists:** Bangladeshi households re-buy the same staples every week or two. Locking in a subscription removes the re-search cost for them and gives ShareDeal predictable inventory + delivery batching. Hidden on fish/meat/seasonal because those don't recur.
+
 **Visible only on subscription-eligible SKUs** (groceries — rice, oil, milk, eggs, dal, ghee, sugar, salt, biscuits, water). Hidden for fish/meat/seasonal.
 
 Cadence picker (weekly / biweekly / monthly), subscribe price (~10% off solo). Tap → confirmation bottom sheet.
 
 ### 3.6 Open Groups list
+
+> **What it is:** A live list of in-progress groups for this product, filtered to the user's building or neighborhood.
+> **Why it exists:** Joining an existing group is faster than starting one (you skip the "wait for friends" anxiety). Showing real names + locations + countdown builds urgency *and* trust — the user sees "Rina from floor 4 needs 1 more person" instead of an abstract "join a group" button.
+
 "৩টি গ্রুপ চলছে — যোগ দিন!"
 
 Filtered by **scope** picker (only 2 options to keep it simple):
@@ -139,6 +160,10 @@ Filtered by **scope** picker (only 2 options to keep it simple):
 Each row: leader avatar, leader name, locality tag, joined-count, time-remaining countdown, a "যোগ দিন" tap target (selecting it sets `_selectedGroupId` and changes the bottom CTA from "নতুন গ্রুপ" to "যোগ দিন").
 
 ### 3.7 Verified Seller card
+
+> **What it is:** A green-bordered card showing seller name + ✓ verified badge + NID-checked + dispute count. Tappable → merchant storefront.
+> **Why it exists:** Bangladeshi grocery e-commerce trust hinges on knowing the seller is a real, accountable entity (not a random reseller). NID-verification + zero-disputes signals are the local equivalents of a Stripe-verified merchant in the West.
+
 "🏪 ধান সিদ্ধ ফার্মস ✓ যাচাইকৃত · NID যাচাই · ০ অভিযোগ"
 
 Tap → push **merchant storefront** (`merchant_store_screen.dart`).
@@ -166,6 +191,9 @@ Below: green escrow chip "আপনার টাকা সুরক্ষিত 
 ---
 
 ## 4. Group buying core flow
+
+> **What it is:** The hero mechanic. 2-5 people commit to buy the same SKU together within a 24-hour window; once filled, everyone pays the lower group price; if it doesn't fill, everyone gets auto-refunded.
+> **Why it exists:** Bangladesh's grocery sourcing is fragmented — wholesale prices exist but require bulk volumes individuals can't hit. Group buying *manufactures* that bulk by aggregating neighbors. Discounts come from real economics (less last-mile, fewer middlemen), not from VC subsidy.
 
 The hero feature. End-to-end:
 
@@ -196,6 +224,9 @@ Key trust copy throughout: **"গ্রুপ পূর্ণ না হলে �
 ---
 
 ## 5. Cart → checkout → success (`cart_screen.dart`)
+
+> **What it is:** A 4-step linear checkout: cart → address → payment → success. The bKash payment popup mirrors the real bKash USSD flow (PIN → spinner → confirmation).
+> **Why it exists:** Cash-on-delivery is the default trust model in BD, but bKash unlocks no-contact deliveries + faster cash-cycle for sellers. Mirroring the real bKash UX inside the app means devs know exactly what to integrate, and users know exactly what to expect.
 
 4 steps, single screen with state machine `CartStep` enum:
 
@@ -243,6 +274,9 @@ CoD-specific toggle: "Confirm with a phone call before delivery"
 
 ## 6. Tracking + returns + cancel (`tracking_screen.dart`)
 
+> **What it is:** Live order status (rider on faux-map, timeline of stages) + a return-request sheet (delivered orders) + a cancel-order sheet (within 30 minutes of placing).
+> **Why it exists:** COD orders need explicit cancel and return paths or trust collapses ("what if I don't want it when it arrives?"). The 30-min cancel window protects the buyer without breaking ops; the 7-day return guarantee with a 24-hr seller response SLA makes the platform — not the seller — the trust anchor.
+
 Single screen:
 - **Map preview** with rider position interpolating from origin to destination
 - **Rider card** (name, phone CTA, ETA)
@@ -263,6 +297,9 @@ Conditional CTAs:
 
 ## 7. Bargain "Win Free" (`bargain_screen.dart`)
 
+> **What it is:** A viral game where each friend who taps a shared link cuts the price further; if 3 friends help (down from 8 in the original spec — tuned for our user base), the user gets the product **free**.
+> **Why it exists:** Pure group buying needs ~3 buyers. Bargain needs ~3 sharers. Both create an invite-loop, but bargain converts cheaper because no friend has to *spend* — they just tap. It's the lowest-friction acquisition channel for a startup with no ad budget.
+
 Friend-help-cuts-the-price game. Pinduoduo-style.
 
 - Hero card: large "৳XXX" current price (animated cut-amount pop on each tap), countdown
@@ -279,6 +316,9 @@ Friend-help-cuts-the-price game. Pinduoduo-style.
 
 ## 8. Eid Salami (formerly "Red Envelope") — `red_envelope_screen.dart`
 
+> **What it is:** After every order, the buyer can send a ৳-pool to friends via WhatsApp. Friends tap envelopes to grab a random share.
+> **Why it exists:** Eid Salami (cash gift to younger relatives at Eid) is a deeply ingrained tradition in BD, but the social-grab-from-friends mechanic is *new* in this context. We borrow Pinduoduo's Hong Bao retention loop and reskin it culturally — the gifter gets to feel generous, the receiver gets free credit + an app install, and ShareDeal gets the friend on the platform.
+
 Cultural rebrand: Bangladesh's Eid gift-giving tradition. Mechanic = lucky-money grab.
 
 Trigger: post-purchase success card "🧧 Send Eid Salami on WhatsApp" → opens screen.
@@ -292,6 +332,9 @@ Trigger: post-purchase success card "🧧 Send Eid Salami on WhatsApp" → opens
 ---
 
 ## 9. Orchard 🌳 (`orchard_screen.dart`)
+
+> **What it is:** A virtual fruit tree the user waters daily. After 14 days the tree ripens and ShareDeal ships a real box of fruit to the user's address.
+> **Why it exists:** Daily-active-user is the metric that determines whether a commerce app survives. Pinduoduo's orchard hits 50%+ DAU because users can't bear to lose their tree. Our version is *forgiving* (streak survives 2 missed days) so we don't punish casual users into churn — Bangladesh smartphone usage isn't yet at the every-day-without-fail level Chinese super-apps assume.
 
 Daily-watering retention loop. Pinduoduo Orchard adaptation.
 
@@ -313,6 +356,9 @@ Daily-watering retention loop. Pinduoduo Orchard adaptation.
 
 ## 10. Spin & Scratch (`games_screen.dart`)
 
+> **What it is:** Two micro-games. Spin = once-a-day wheel that drops 5-50 coins. Scratch = revealed reward on every delivered order.
+> **Why it exists:** Spin gives users a reason to open the app even on no-purchase days (DAU). Scratch creates a delight moment *attached to the order itself* — the unboxing that's missing in COD-grocery, where there's no surprise. Both seed the coin economy (coins = future order discount) so the value never leaves the platform.
+
 2 sub-tabs:
 
 ### 10.1 Spin
@@ -324,6 +370,9 @@ Card per delivered order. Tap → reveals coin amount. Awards stored in mock Coi
 ---
 
 ## 11. Live shopping (`live_stream_screen.dart`)
+
+> **What it is:** Real-time video stream where a host (merchant or influencer) demos products and viewers buy with one tap. Chat + reactions + pinned product.
+> **Why it exists:** Bangladesh F-commerce is dominated by Facebook Live sellers — billions of taka in GMV happen on FB pages with no app. Live shopping inside ShareDeal pulls that GMV into a real e-commerce stack: discoverable products, real escrow, real fulfillment, and the seller still gets the live engagement they're used to.
 
 Immersive (no bottom nav). Sections:
 
@@ -343,6 +392,9 @@ Streamlined cart for in-stream purchase. Mirrors main cart but condensed.
 
 ## 12. Social tab (`social_screen.dart`)
 
+> **What it is:** A social feed surfacing what neighbors and people you follow are buying, joining, and sharing. Plus a nearby-users map and a follow graph.
+> **Why it exists:** Group buying *is* social commerce — the buying decision lives outside the app, in WhatsApp groups and family chats. The Social tab pulls that decision-making into ShareDeal so the conversation, the proof, and the purchase all happen in one place.
+
 3 sub-tabs:
 
 - **Nearby**: Map view + list of users in your para (currently hardcoded `_nearby` list — wire to `/social/feed?scope=nearby`)
@@ -354,6 +406,9 @@ Top: QR scanner toggle (overlay), search toggle (overlay).
 ---
 
 ## 13. Para Neta — Community Leader (`leader_screen.dart`)
+
+> **What it is:** A nominated user in each para (neighborhood) who runs a local pickup point. Their corner shop, garage, or living room becomes the drop point for everyone's group orders. They earn 3-5% commission per order, paid weekly via bKash.
+> **Why it exists:** Last-mile delivery in dense Dhaka neighborhoods is brutal — narrow lanes, no addresses, 6-floor walk-ups. Going Para Neta is how Pinduoduo scaled into rural China and how Meituan dominates urban delivery. For ShareDeal: the leader uses *existing* infrastructure (their already-open shop), eats the last-mile cost in their daily routine, and gets paid for it. Cheaper than building a fleet, more local than Pathao/Foodpanda riders, and turns one neighborhood resident into a brand ambassador.
 
 3 sub-views: Leaderboard | Leader Dashboard | Become Leader.
 
@@ -380,6 +435,9 @@ For onboarded leaders. Pickup list, today's orders, commission tracker, payout h
 ---
 
 ## 14. Profile (`profile_screen.dart`)
+
+> **What it is:** User hub — coins, referrals, savings, order history, settings, and the **Games & Rewards** discoverability section that links to all 6 gamification surfaces.
+> **Why it exists:** Without a single hub, gamification gets diluted in the bottom nav. The Games & Rewards card lets the user mentally categorize "the fun stuff" while keeping commerce clean in the main 5-tab nav.
 
 Sections top-to-bottom:
 
@@ -417,6 +475,9 @@ Sections top-to-bottom:
 
 ## 15. Compare ⚖️
 
+> **What it is:** Pick any 2 SKUs from explore/wishlist, see them side-by-side: solo price, group price, savings, group size, rating, sold count, category.
+> **Why it exists:** "Two brands of rice, which is actually cheaper per kg?" is one of the most common cart-abandonment questions in Bangladesh grocery. Compare resolves it in-app instead of forcing the user to take screenshots and ask a relative on WhatsApp.
+
 Side-by-side product compare (max 2 SKUs).
 
 - ⚖️ icon on every Explore product card
@@ -429,6 +490,9 @@ Side-by-side product compare (max 2 SKUs).
 
 ## 16. Wishlist (`wishlist_screen.dart`)
 
+> **What it is:** Saved products with one-tap "move to cart". Heart icon is shared state across product cards, product detail, and this list.
+> **Why it exists:** Users browse mid-day and buy at night. Wishlist + price-drop notifications (in the Notifications screen) closes that loop instead of losing them to "I'll find it again later".
+
 - List of saved products (from WishlistStore)
 - Each row: image, name, price, ❤️ remove
 - Tap product → product detail
@@ -437,6 +501,9 @@ Side-by-side product compare (max 2 SKUs).
 ---
 
 ## 17. Notifications (`notifications_screen.dart`)
+
+> **What it is:** Filtered feed of system events. Tap any → routes to the right screen + marks read. Includes abandoned-cart and "group filling fast" nudges.
+> **Why it exists:** Group buying lives or dies on timing — a group has a 24-hr deadline, an abandoned cart blocks neighbors from completing theirs, a flash deal expires. Without high-quality push, the whole urgency mechanic stalls.
 
 Filter tabs: All | Deals | Social | System.
 
@@ -457,6 +524,9 @@ Demo notifications include:
 
 ## 18. Merchant storefront (`merchant_store_screen.dart`)
 
+> **What it is:** The buyer-facing seller page (separate from the seller's own dashboard at `merchant_screen.dart`). Banner + verified badge + stats + 3 tabs (Products / Reviews / About — including NID + trade license + return policy).
+> **Why it exists:** Once a buyer trusts a seller, repeat purchases follow without going through search. Storefronts let sellers build a brand inside ShareDeal — and the verified badges + dispute counts are how trust transfers from one transaction to the next.
+
 Buyer-facing seller page (different from `merchant_screen.dart` which is the seller's own dashboard).
 
 - Green gradient banner with 🌾 motifs, back arrow, share icon
@@ -468,6 +538,9 @@ Buyer-facing seller page (different from `merchant_screen.dart` which is the sel
 ---
 
 ## 19. For You feed (`foryou_screen.dart`)
+
+> **What it is:** Algorithmic mix of products, deals, and trending categories surfaced with a "because you..." reason on each card.
+> **Why it exists:** Group buying narrows discovery (you only see what your neighbors are buying). For You broadens it back without losing relevance — exposing the user to products outside their para's current trend so the catalog stays fresh.
 
 Personalized recommendations:
 - Filter chips: All | Trending | Deals | Categories
@@ -488,6 +561,9 @@ Personalized recommendations:
 
 ## 21. Group create (`group_create_screen.dart`)
 
+> **What it is:** A 5-step wizard for starting a fresh group: pick product → confirm → settings (scope/size/duration) → preview → success+share.
+> **Why it exists:** Starting a group is the harder side of the two-sided market (joining is easier). The wizard breaks the decision into trivial choices and ends on the share screen so the next 1-2 friends are invited within seconds of group creation — when momentum is highest.
+
 5-step flow:
 1. **intro** — pick the product
 2. **product** — confirm SKU
@@ -499,6 +575,9 @@ Personalized recommendations:
 
 ## 22. Invite (`invite_screen.dart`)
 
+> **What it is:** Share sheet with referral code, 4 share channels (WhatsApp / Facebook / Messenger / Copy link), and a contact list with per-contact "invite" toggle.
+> **Why it exists:** Every viral mechanic in ShareDeal funnels into this screen. WhatsApp is where invitations actually land in BD — the layout treats it as channel #1, not "one of many".
+
 Share modal with:
 - Referral code (copy + auto-toast)
 - 4 share channels (WhatsApp / Facebook / Messenger / Copy link)
@@ -507,6 +586,9 @@ Share modal with:
 ---
 
 ## 23. Landing screens (`landing_screen.dart`)
+
+> **What it is:** The first screen a *non-user* sees when they tap a shared bargain or Eid Salami link from WhatsApp. Branded mini-page that previews the reward and pushes them into install + claim.
+> **Why it exists:** A shared link that opens to a generic app store page loses 80% of clicks. A landing page with the actual ৳-amount they can claim and the friend's name converts the click into install + first session.
 
 WhatsApp-acquisition entry points. When a user clicks a shared link they land here:
 - **Bargain landing** — preview of the bargain product, "Tap to Cut" CTA → bargain
