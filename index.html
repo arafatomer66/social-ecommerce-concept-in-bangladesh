@@ -793,6 +793,16 @@ function HomeScreen({ onNav, onProduct, onInvite, onStream }) {
         </div>
       </div>
 
+      {/* Create Group CTA Banner */}
+      <div onClick={()=>onNav("groupcreate")} style={{background:"linear-gradient(135deg,#1565C0,#0D47A1)",margin:"0 0 0",padding:"10px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+        <div style={{width:40,height:40,borderRadius:12,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>👥</div>
+        <div style={{flex:1}}>
+          <div style={{color:"#FFD600",fontSize:13,fontWeight:800}}>{t("গ্রুপ তৈরি করুন, বেশি বাঁচান!","Create a group, save more!")}</div>
+          <div style={{color:"rgba(255,255,255,0.8)",fontSize:11,marginTop:2}}>{t("আপনার পণ্য যোগ করুন · বন্ধু আনুন · কমিশন আয় করুন","Add products · invite friends · earn commission")}</div>
+        </div>
+        <div style={{color:"#FFD600",fontSize:18,fontWeight:800}}>›</div>
+      </div>
+
       {/* Banner */}
       <div style={{position:"relative",overflow:"hidden",height:140}}>
         {banners.map((b,i)=>(
@@ -2464,6 +2474,22 @@ function ProfileScreen({ onNav, onBack, userOrders = [], userGroups = [] }) {
         </div>
       </div>
 
+      {/* Seller Dashboard + Create Group — two prominent cards */}
+      <div style={{display:"flex",gap:8,margin:"8px 12px 0"}}>
+        <div onClick={()=>onNav("merchant")} style={{flex:1,background:"linear-gradient(135deg,#1A237E,#283593)",borderRadius:16,padding:"14px 12px",cursor:"pointer",display:"flex",flexDirection:"column",gap:6}}>
+          <span style={{fontSize:26}}>🏪</span>
+          <div style={{color:"#FFD600",fontSize:12,fontWeight:800}}>{t("সেলার ড্যাশবোর্ড","Seller Dashboard")}</div>
+          <div style={{color:"rgba(255,255,255,0.7)",fontSize:10,lineHeight:1.4}}>{t("আয়, অর্ডার ও পণ্য দেখুন","View earnings, orders & products")}</div>
+          <div style={{marginTop:4,background:"rgba(255,215,0,0.2)",color:"#FFD600",borderRadius:8,padding:"4px 10px",fontSize:10,fontWeight:700,alignSelf:"flex-start"}}>→ {t("ড্যাশবোর্ড","Dashboard")}</div>
+        </div>
+        <div onClick={()=>onNav("groupcreate")} style={{flex:1,background:"linear-gradient(135deg,#1565C0,#0D47A1)",borderRadius:16,padding:"14px 12px",cursor:"pointer",display:"flex",flexDirection:"column",gap:6}}>
+          <span style={{fontSize:26}}>👥</span>
+          <div style={{color:"#FFD600",fontSize:12,fontWeight:800}}>{t("গ্রুপ তৈরি করুন","Create a Group")}</div>
+          <div style={{color:"rgba(255,255,255,0.7)",fontSize:10,lineHeight:1.4}}>{t("আপনার পণ্য যোগ করুন ও কমিশন আয় করুন","Add products & earn commission")}</div>
+          <div style={{marginTop:4,background:"rgba(255,215,0,0.2)",color:"#FFD600",borderRadius:8,padding:"4px 10px",fontSize:10,fontWeight:700,alignSelf:"flex-start"}}>→ {t("শুরু করুন","Get started")}</div>
+        </div>
+      </div>
+
       <div style={{background:"#fff",margin:"8px 0",padding:"12px 16px"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:8}}>
           {[
@@ -3048,6 +3074,16 @@ function SocialScreen({ onNav, onProduct }) {
       </div>
 
       <div style={{flex:1,overflowY:"auto",minHeight:0,paddingBottom:90}}>
+        {/* Create Group CTA strip in social */}
+        <div onClick={()=>onNav("groupcreate")} style={{background:"linear-gradient(90deg,#1565C0,#0D47A1)",padding:"10px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",flexShrink:0}}>
+          <div style={{width:38,height:38,borderRadius:12,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>👥</div>
+          <div style={{flex:1}}>
+            <div style={{color:"#FFD600",fontSize:12,fontWeight:800}}>{t("আপনিও গ্রুপ ডিল তৈরি করুন!","Create your own group deal!")}</div>
+            <div style={{color:"rgba(255,255,255,0.8)",fontSize:10,marginTop:1}}>{t("পণ্য যোগ করুন · বন্ধু আনুন · কমিশন আয় করুন","Add product · invite friends · earn commission")}</div>
+          </div>
+          <div style={{color:"#FFD600",fontSize:16,fontWeight:900}}>›</div>
+        </div>
+
         {tab==="nearby" && <>
           <div style={{background:"#0D1F17",position:"relative",height:220,overflow:"hidden"}}>
             {[...Array(6)].map((_,i)=><div key={`h${i}`} style={{position:"absolute",left:0,right:0,top:`${i*20}%`,height:1,background:"rgba(0,106,78,0.25)"}}/>)}
@@ -6338,7 +6374,7 @@ function ShareDealApp() {
     </div>
   );
 
-  const noBottomNav = ["product", "games", "invite", "cart", "livestream", "merchant", "shop", "groupcreate", "bargain", "redenvelope", "orchard", "tracking", "landing", "groupchat", "wishlist", "returns", "leader", "foryou", "livecheckout", "mygroups", "subscriptions", "qa", "groupexpiry", "notifications"];
+  const noBottomNav = ["product", "games", "invite", "cart", "livestream", "merchant", "shop", "bargain", "redenvelope", "orchard", "tracking", "landing", "groupchat", "wishlist", "returns", "leader", "foryou", "livecheckout", "mygroups", "subscriptions", "qa", "groupexpiry", "notifications"];
 
   const renderScreen = () => {
     switch (screen) {
@@ -6354,7 +6390,7 @@ function ShareDealApp() {
       case "merchant": return <MerchantScreen onBack={() => goBack("profile")} onNav={navigate} />;
       case "shop":     return <ShopScreen shopName={selectedShop} onBack={() => goBack("product")} onNav={navigate} onProduct={openProduct} />;
       case "subscriptions": return <SubscriptionsScreen onBack={() => goBack("profile")} onNav={navigate} userSubscriptions={appSubscriptions} onPause={pauseSubscription} onResume={resumeSubscription} onCancel={cancelSubscription} onSkipNext={skipNextDelivery} onChangeQty={changeSubQty} />;;
-      case "groupcreate": return <GroupCreateScreen onBack={() => goBack("merchant")} onNav={navigate} />;
+      case "groupcreate": return <GroupCreateScreen onBack={() => goBack(history[history.length-2] || "home")} onNav={navigate} />;
       case "social":   return <SocialScreen onNav={navigate} onProduct={openProduct} />;
       case "bargain":  return <BargainScreen bargainProduct={bargainProduct} onBack={() => goBack("home")} onNav={navigate} />;
       case "redenvelope": return <RedEnvelopeScreen orderId={redEnvData.orderId} total={redEnvData.total} onBack={() => goBack("home")} onNav={navigate} />;
@@ -6375,12 +6411,11 @@ function ShareDealApp() {
     }
   };
 
-  // Updated bottom nav with social tab
   const tabs = [
-    { id: "home", icon: "🏠", label: "হোম" },
+    { id: "home",    icon: "🏠", label: "হোম" },
     { id: "explore", icon: "🔍", label: "খুঁজুন" },
-    { id: "social", icon: "📡", label: "সামাজিক" },
-    { id: "cart", icon: "🛒", label: "কার্ট", badge: cartCount },
+    { id: "social",  icon: "📡", label: "সামাজিক" },
+    { id: "cart",    icon: "🛒", label: "কার্ট", badge: cartCount },
     { id: "profile", icon: "👤", label: "আমার" },
   ];
 
@@ -6390,13 +6425,13 @@ function ShareDealApp() {
       {renderScreen()}
       {!noBottomNav.includes(screen) && (
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #EEE", display: "flex", zIndex: 100, paddingBottom: 20 }}>
-          {tabs.map(t => (
-            <div key={t.id} onClick={() => navigate(t.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 10, paddingBottom: 2, gap: 3, cursor: "pointer" }}>
+          {tabs.map(tab => (
+            <div key={tab.id} onClick={() => navigate(tab.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 10, paddingBottom: 2, gap: 3, cursor: "pointer" }}>
               <div style={{ position: "relative" }}>
-                <span style={{ fontSize: 22, filter: screen === t.id ? "none" : "grayscale(0.3) opacity(0.6)" }}>{t.icon}</span>
-                {t.badge > 0 && <span style={{ position: "absolute", top: -4, right: -6, background: SD_COLORS.red, color: "#fff", borderRadius: 8, fontSize: 9, padding: "1px 4px", fontWeight: 700, minWidth: 14, textAlign: "center" }}>{t.badge}</span>}
+                <span style={{ fontSize: 22, filter: screen === tab.id ? "none" : "grayscale(0.3) opacity(0.6)" }}>{tab.icon}</span>
+                {tab.badge > 0 && <span style={{ position: "absolute", top: -4, right: -6, background: SD_COLORS.red, color: "#fff", borderRadius: 8, fontSize: 9, padding: "1px 4px", fontWeight: 700, minWidth: 14, textAlign: "center" }}>{tab.badge}</span>}
               </div>
-              <span style={{ fontSize: 10, fontWeight: 500, color: screen === t.id ? SD_COLORS.primary : SD_COLORS.muted }}>{t.label}</span>
+              <span style={{ fontSize: 10, fontWeight: 500, color: screen === tab.id ? SD_COLORS.primary : SD_COLORS.muted }}>{tab.label}</span>
             </div>
           ))}
         </div>
