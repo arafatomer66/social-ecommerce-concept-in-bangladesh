@@ -2104,14 +2104,14 @@ function CartScreen({ onNav, onBack, context, onPlaceOrder, cartCount, setCartCo
   ];
 
   return (
-    <div style={{flex:1,display:"flex",flexDirection:"column",background:SD_COLORS.bg}}>
+    <div style={{flex:1,minHeight:0,display:"flex",flexDirection:"column",background:SD_COLORS.bg}}>
       <TopBar
         title={step==="cart"?`🛒 ${t("কার্ট","Cart")}`:step==="address"?`📍 ${t("ঠিকানা","Address")}`:`💳 ${t("পেমেন্ট","Payment")}`}
         onBack={step==="cart"?onBack:()=>setStep(step==="payment"?"address":"cart")}
         rightEl={<LangToggle/>}
       />
 
-      <div style={{flex:1,overflowY:"auto",paddingBottom:120}}>
+      <div style={{flex:1,minHeight:0,overflowY:"auto",paddingBottom:180}}>
         {step==="cart" && <>
           {/* === Hero savings banner === */}
           {(() => {
@@ -4575,15 +4575,46 @@ Object.assign(window, { LandingScreen });
 </script>
 <script type="text/babel" data-source="sd-groupchat.jsx">
 // ShareDeal — In-Group Chat (for ongoing group buys)
-function GroupChatScreen({ onBack, onNav }) {
+function GroupChatScreen({ group, onBack, onNav }) {
   const lang = useLang();
-  const [messages, setMessages] = React.useState([
-    { id: 1, user: t("কামাল ভাই", "Kamal"), av: "🧔", text: t("আমি কিনলাম! আর ১ জন লাগবে 👍", "I joined! 1 more needed 👍"), time: "১১:২২", self: false },
-    { id: 2, user: t("সানজিদা", "Sanjida"), av: "👩", text: t("কোয়ালিটি কেমন?", "How's the quality?"), time: "১১:২৪", self: false },
-    { id: 3, user: t("আপনি", "You"), av: "🧑", text: t("বিক্রেতা ভেরিফাইড, ৪.৭ রেটিং", "Seller verified, 4.7 rating"), time: "১১:২৫", self: true },
-    { id: 4, user: t("সানজিদা", "Sanjida"), av: "👩", text: t("ঠিক আছে, যোগ দিচ্ছি", "OK, joining now"), time: "১১:২৬", self: false },
-    { id: 5, user: t("সানজিদা", "Sanjida"), av: "👩", text: t("✅ গ্রুপ সম্পূর্ণ! সবাই ৳১৮১ বাঁচালো 🎉", "✅ Group complete! Everyone saved ৳181 🎉"), time: "১১:২৭", self: false, system: true },
-  ]);
+
+  // Derive this chat's context from the group we were opened with.
+  // Falls back to the original "Polao Rice" demo group when opened generically
+  // (e.g. from the Home demo button), so those entry points still work.
+  const g = group || {};
+  const groupName = g.name || t("পোলাও চাল গ্রুপ", "Polao Rice Group");
+  const joined = g.joined != null ? g.joined : 3;
+  const total = g.total != null ? g.total : 3;
+  const filled = joined >= total;
+  const need = Math.max(0, total - joined);
+  const groupPrice = g.groupPrice != null ? g.groupPrice : 299;
+  const soloPrice = g.soloPrice != null ? g.soloPrice : 480;
+  const saved = Math.max(0, soloPrice - groupPrice);
+  const statusText = filled
+    ? t(`${joined} সদস্য · গ্রুপ সম্পূর্ণ ✅`, `${joined} members · group complete ✅`)
+    : t(`${joined}/${total} সদস্য · আর ${need} জন দরকার`, `${joined}/${total} members · ${need} more needed`);
+
+  // Seed an opening conversation tailored to this group's members & status.
+  const seedMessages = () => {
+    const others = (g.members || []).filter(m => m && !m.self).map(m => m.name);
+    const a = others[0] || t("কামাল ভাই", "Kamal");
+    const b = others[1] || others[0] || t("সানজিদা", "Sanjida");
+    const base = [
+      { id: 1, user: a, av: "🧔", text: t("আমি কিনলাম! 👍", "I joined! 👍"), time: "১১:২২", self: false },
+      { id: 2, user: b, av: "👩", text: t("কোয়ালিটি কেমন?", "How's the quality?"), time: "১১:২৪", self: false },
+      { id: 3, user: t("আপনি", "You"), av: "🧑", text: t("বিক্রেতা ভেরিফাইড, ৪.৭ রেটিং", "Seller verified, 4.7 rating"), time: "১১:২৫", self: true },
+    ];
+    if (filled) {
+      base.push({ id: 4, user: b, av: "👩", text: t("ঠিক আছে, যোগ দিচ্ছি", "OK, joining now"), time: "১১:২৬", self: false });
+      base.push({ id: 5, user: "", av: "", text: t(`✅ গ্রুপ সম্পূর্ণ! সবাই ৳${saved} বাঁচালো 🎉`, `✅ Group complete! Everyone saved ৳${saved} 🎉`), time: "১১:২৭", self: false, system: true });
+    } else {
+      base.push({ id: 4, user: t("আপনি", "You"), av: "🧑", text: t(`আর ${need} জন হলেই দাম কমবে, শেয়ার করি!`, `${need} more and the price drops — let's share!`), time: "১১:২৬", self: true });
+      base.push({ id: 5, user: "", av: "", text: t(`⏳ আর ${need} জন দরকার — সবাই ৳${saved} বাঁচাবে`, `⏳ ${need} more needed — everyone saves ৳${saved}`), time: "১১:২৭", self: false, system: true });
+    }
+    return base;
+  };
+
+  const [messages, setMessages] = React.useState(seedMessages);
   const [msg, setMsg] = React.useState("");
 
   const send = () => {
@@ -4599,18 +4630,18 @@ function GroupChatScreen({ onBack, onNav }) {
         <div onClick={onBack} style={{ color: "#fff", fontSize: 22, cursor: "pointer" }}>←</div>
         <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👥</div>
         <div style={{ flex: 1 }}>
-          <div style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{t("পোলাও চাল গ্রুপ", "Polao Rice Group")}</div>
-          <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 10 }}>{t("৩ সদস্য · গ্রুপ সম্পূর্ণ ✅", "3 members · group complete ✅")}</div>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{groupName}</div>
+          <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 10 }}>{statusText}</div>
         </div>
         <LangToggle dark />
       </div>
 
       {/* Pinned product */}
       <div style={{ background: "#FFF8E1", padding: "8px 12px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid #FFE082" }}>
-        <ProductPlaceholder w={42} h={42} name="পোলাও" />
+        <ProductPlaceholder w={42} h={42} name={groupName} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, fontWeight: 700 }}>{t("পোলাও চাল ৫কেজি", "Polao Rice 5kg")}</div>
-          <div style={{ fontSize: 11, color: SD_COLORS.red, fontWeight: 700 }}>৳299 <span style={{ color: SD_COLORS.muted, fontSize: 9, textDecoration: "line-through", fontWeight: 400 }}>৳480</span></div>
+          <div style={{ fontSize: 12, fontWeight: 700 }}>{groupName}</div>
+          <div style={{ fontSize: 11, color: SD_COLORS.red, fontWeight: 700 }}>৳{groupPrice} <span style={{ color: SD_COLORS.muted, fontSize: 9, textDecoration: "line-through", fontWeight: 400 }}>৳{soloPrice}</span></div>
         </div>
         <div onClick={()=>onNav("product")} style={{ background: SD_COLORS.primary, color: "#fff", borderRadius: 10, padding: "5px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>{t("দেখুন", "View")}</div>
       </div>
@@ -5785,7 +5816,7 @@ function MyGroupsScreen({ onBack, onNav, onProduct, userGroups = [] }) {
                         📣 {t("শেয়ার","Share")}
                       </div>
                     )}
-                    <div onClick={()=>onNav("groupchat")} style={{flex:1,background:SD_COLORS.primaryLight,color:SD_COLORS.primary,borderRadius:10,padding:"9px 0",textAlign:"center",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                    <div onClick={()=>onNav("groupchat", g)} style={{flex:1,background:SD_COLORS.primaryLight,color:SD_COLORS.primary,borderRadius:10,padding:"9px 0",textAlign:"center",fontSize:12,fontWeight:700,cursor:"pointer"}}>
                       💬 {t("চ্যাট","Chat")}
                     </div>
                     <div onClick={()=>onProduct(g.productId,"group")} style={{flex:1,background:"#fff",border:`1px solid ${SD_COLORS.primary}`,color:SD_COLORS.primary,borderRadius:10,padding:"9px 0",textAlign:"center",fontSize:12,fontWeight:700,cursor:"pointer"}}>
@@ -6140,6 +6171,377 @@ function SubscriptionsScreen({ onBack, onNav, userSubscriptions = [], onPause, o
   );
 }
 Object.assign(window, { SubscriptionsScreen });
+// ShareDeal — AI Shopping Assistant ("ShareDeal AI: your shopping assistant")
+// ───────────────────────────────────────────────────────────────────────────
+// Conversational commerce: the user can ASK a price and ORDER, CREATE a group,
+// or JOIN a group entirely by chatting. Every action routes through the app's
+// real placeOrder() handler, so a chat order/group shows up in My Groups,
+// Profile orders, and Tracking just like a tap-driven one.
+//
+// The "brain" (sdAIBrain) is a local, rules-based interpreter grounded in real
+// SD_DATA, so the demo runs fully offline with zero API cost. In PRODUCTION you
+// replace the single sdAIBrain(text) call inside `send()` with an async fetch to
+// your Laravel backend that runs Claude tool-calling against the live catalog,
+// open groups, and the user's location — returning the same { reply, card } shape.
+// ───────────────────────────────────────────────────────────────────────────
+
+// Flatten every product source into one searchable, normalized list.
+function sdAllProducts() {
+  const norm = (p) => ({
+    id: p.id, name: p.name, category: p.category,
+    soloPrice: p.soloPrice || p.dealPrice || p.price || p.originalPrice || 0,
+    groupPrice: p.groupPrice || Math.round((p.soloPrice || p.price || 0) * 0.8),
+    groupSize: p.groupSize || 3, currentMembers: p.currentMembers || 0,
+    timeLeft: p.timeLeft || 3600 * 6,
+  });
+  const all = [
+    ...(SD_DATA.groupDeals || []).map(norm),
+    ...(SD_DATA.flashDeals || []).map(norm),
+    ...(SD_DATA.exploreProducts || []).map(norm),
+  ];
+  const seen = {}, out = [];
+  all.forEach(p => { if (!seen[p.id]) { seen[p.id] = 1; out.push(p); } });
+  return out;
+}
+
+// Banglish / English / Bangla keyword aliases → a token to match in product name
+const SD_AI_ALIASES = [
+  { keys: ["alu", "aloo", "alur", "potato"], match: "আলু" },
+  { keys: ["peyaj", "piaj", "piyaj", "onion"], match: "পেঁয়াজ" },
+  { keys: ["rosun", "roshun", "garlic"], match: "রসুন" },
+  { keys: ["ada", "ginger"], match: "আদা" },
+  { keys: ["morich", "lonka", "chili", "chilli", "chili guro"], match: "মরিচ" },
+  { keys: ["holud", "holdi", "turmeric"], match: "হলুদ" },
+  { keys: ["chini", "sugar"], match: "চিনি" },
+  { keys: ["lobon", "noon", "salt"], match: "লবণ" },
+  { keys: ["dudh", "milk", "guro dudh"], match: "দুধ" },
+  { keys: ["ghee", "ghi"], match: "ঘি" },
+  { keys: ["ilish", "hilsa", "ilisha", "fish", "mach", "maach"], match: "ইলিশ" },
+  { keys: ["dal", "daal", "lentil", "mosur", "masoor", "musur"], match: "ডাল" },
+  { keys: ["soyabin", "soyabean", "soybean", "soya"], match: "সয়াবিন" },
+  { keys: ["sorisha", "sorishar", "mustard"], match: "সরিষা" },
+  { keys: ["minicket", "miniket"], match: "মিনিকেট" },
+  { keys: ["polao", "pulao", "polau"], match: "পোলাও" },
+];
+
+function sdFindProduct(text) {
+  const lc = " " + (text || "").toLowerCase() + " ";
+  const products = sdAllProducts();
+  // 1) Bangla tokens typed directly
+  for (const a of SD_AI_ALIASES) {
+    if (text && text.includes(a.match)) {
+      const hit = products.find(p => p.name.includes(a.match));
+      if (hit) return hit;
+    }
+  }
+  // 2) Banglish / English alias hit
+  for (const a of SD_AI_ALIASES) {
+    if (a.keys.some(k => lc.includes(" " + k) || lc.includes(k + " "))) {
+      const hit = products.find(p => p.name.includes(a.match));
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+function sdDetectIntent(text) {
+  const lc = (text || "").toLowerCase();
+  const has = (...ws) => ws.some(w => lc.includes(w) || (text || "").includes(w));
+  if (has("create group", "group banao", "group banai", "notun group", "নতুন গ্রুপ", "গ্রুপ বানা", "গ্রুপ খুল", "start a group", "leader hobo", "group khulbo")) return "create_group";
+  if (has("join", "jog di", "jogdi", "add me", "add koro", "add to group", "গ্রুপে যোগ", "যোগ দা", "যোগ দি", "ঢুকবো", "ডুকবো", "add koro group")) return "join_group";
+  if (has("order", "kinbo", "kinba", "kinmu", "kinte chai", "kine felo", "buy", "অর্ডার", "কিনবো", "কিনতে চাই", "নিবো", "নিব")) return "order";
+  if (has("offer", "deal", "sale", "ছাড়", "ki ki", "ki ache", "কি কি", "অফার", "discount", "today")) return "browse";
+  if (has("dam", "daam", "koto", "price", "rate", "দাম", "কত", "koto taka", "kemne")) return "price";
+  if (has("hi ", "hello", "hey", "salam", "assalam", "আসসালাম", "হাই", "help", "ki korte", "কি করতে", "সাহায্য", "ki paro")) return "help";
+  return "unknown";
+}
+
+// Deterministic "neighbors near you" count (stable per product, no randomness)
+function sdNeighbors(p) {
+  const c = (p.id || "x").charCodeAt((p.id || "x").length - 1);
+  return 6 + (c % 16); // 6–21
+}
+function sdMockLeader() { return t("কামাল ভাই", "Kamal"); }
+
+// Build a group object shaped the way GroupChatScreen / MyGroups expect.
+function sdAIGroupObj(p, mode, leader) {
+  return {
+    id: "GRP-AI-" + p.id, productId: p.id, name: p.name,
+    role: mode === "leader" ? "leader" : "member",
+    leader: mode === "join" ? leader : null,
+    joined: mode === "leader" ? 1 : Math.min(p.groupSize, (p.currentMembers || 0) + 1),
+    total: p.groupSize, groupPrice: p.groupPrice, soloPrice: p.soloPrice,
+    timeLeft: p.timeLeft, status: "active",
+    members: mode === "leader"
+      ? [{ name: t("আপনি (লিডার)", "You (leader)"), self: true }]
+      : [{ name: leader, leader: true }, { name: t("আপনি", "You"), self: true }],
+  };
+}
+
+// The interpreter: text → { reply, card }
+function sdAIBrain(text) {
+  const intent = sdDetectIntent(text);
+  const product = sdFindProduct(text);
+
+  if (intent === "help" || (intent === "unknown" && !product)) {
+    return {
+      reply: t(
+        "আসসালামু আলাইকুম! 👋 আমি ShareDeal AI। যেকোনো পণ্যের দাম জিজ্ঞেস করুন — আর চ্যাট করেই অর্ডার করুন, নতুন গ্রুপ বানান বা চলমান গ্রুপে যোগ দিন।",
+        "Assalamu Alaikum! 👋 I'm ShareDeal AI. Ask the price of any product — and order, start a group, or join one, all by chatting."
+      ),
+      card: { type: "help" },
+    };
+  }
+  if (intent === "browse") {
+    return {
+      reply: t("আজকের সেরা গ্রুপ ডিল 🔥 যেকোনোটায় ট্যাপ করে দাম দেখুন বা অর্ডার করুন:", "Today's best group deals 🔥 Tap any to see the price or order:"),
+      card: { type: "deals", items: sdAllProducts().slice(0, 4) },
+    };
+  }
+  if (!product) {
+    return {
+      reply: t('কোন পণ্যটির কথা বলছেন একটু পরিষ্কার করে বলবেন? যেমন: "আলুর দাম কত?" বা "ইলিশ মাছ অর্ডার করো"।', 'Which product do you mean? e.g. "What\'s the price of potato?" or "order hilsa fish".'),
+      card: { type: "help" },
+    };
+  }
+
+  if (intent === "order" || intent === "create_group" || intent === "join_group") {
+    const kind = intent === "order" ? "order" : intent === "create_group" ? "create" : "join";
+    const ack = kind === "order"
+      ? t(`ঠিক আছে! ${product.name} একক অর্ডার করছি... 🛒`, `Got it! Ordering ${product.name} (solo)... 🛒`)
+      : kind === "create"
+      ? t(`দারুণ! ${product.name}-এর নতুন গ্রুপ খুলছি, আপনি লিডার... 👥`, `Nice! Starting a group for ${product.name}, you'll lead it... 👥`)
+      : t(`${product.name}-এর একটা চলমান গ্রুপে যোগ করছি... ➕`, `Joining an open group for ${product.name}... ➕`);
+    return { reply: ack, action: { kind, product } };
+  }
+
+  const save = Math.max(0, product.soloPrice - product.groupPrice);
+  const need = Math.max(1, product.groupSize - product.currentMembers);
+  const nb = sdNeighbors(product);
+  const reply = t(
+    `${product.name} — এককভাবে ৳${product.soloPrice}, কিন্তু গ্রুপে কিনলে মাত্র ৳${product.groupPrice} (৳${save} সাশ্রয়)। এখন একটা গ্রুপে ${product.currentMembers}/${product.groupSize} জন আছে — আর ${need} জন হলেই দাম কমে যাবে! আপনার আশেপাশে ${nb} জন এই সপ্তাহে এটা কিনছেন। নিচে চ্যাট করেই অর্ডার করুন, নতুন গ্রুপ বানান বা চলমান গ্রুপে যোগ দিন 👇`,
+    `${product.name} — solo ৳${product.soloPrice}, but in a group just ৳${product.groupPrice} (save ৳${save}). A group is filling now: ${product.currentMembers}/${product.groupSize} joined — ${need} more and the price drops! ${nb} people near you bought this this week. Order, start a group, or join an open one right here 👇`
+  );
+  return { reply, card: { type: "price", product } };
+}
+
+function AIChatScreen({ onBack, onNav, onPlaceOrder, setCartCount }) {
+  const lang = useLang();
+  const [messages, setMessages] = React.useState(() => ([
+    {
+      id: 1, role: "ai",
+      reply: t(
+        "আসসালামু আলাইকুম, রাফি! 👋 আমি ShareDeal AI। কী কিনতে চান? দাম জিজ্ঞেস করুন বা সরাসরি অর্ডার করুন — সব চ্যাটেই হবে।",
+        "Assalamu Alaikum, Rafi! 👋 I'm ShareDeal AI. What do you need today? Ask a price or just order — all by chatting."
+      ),
+      card: { type: "help" },
+    },
+  ]));
+  const [input, setInput] = React.useState("");
+  const [typing, setTyping] = React.useState(false);
+  const endRef = React.useRef(null);
+
+  React.useEffect(() => { endRef.current && endRef.current.scrollIntoView({ behavior: "smooth" }); }, [messages, typing]);
+
+  const pushUser = (text) => setMessages(m => [...m, { id: Date.now() + Math.random(), role: "user", text }]);
+  const pushAI = (payload) => setMessages(m => [...m, { id: Date.now() + Math.random(), role: "ai", ...payload }]);
+
+  const send = (preset) => {
+    const text = (preset != null ? preset : input).trim();
+    if (!text) return;
+    pushUser(text);
+    setInput("");
+    setTyping(true);
+    // ── PRODUCTION SEAM ──
+    // Replace this setTimeout+sdAIBrain with:
+    //   const res = await fetch("/api/ai-chat", {method:"POST", body: JSON.stringify({message:text})}).then(r=>r.json());
+    //   pushAI(res);  // backend returns the same { reply, card } shape via Claude tool-calling
+    setTimeout(() => {
+      setTyping(false);
+      const res = sdAIBrain(text);
+      if (res.action) {
+        if (res.reply) pushAI({ reply: res.reply });
+        doAction(res.action.kind, res.action.product);
+      } else {
+        pushAI(res);
+      }
+    }, 600);
+  };
+
+  // Perform a real app action, then let the AI confirm it in chat.
+  const doAction = (kind, p) => {
+    if (kind === "order") {
+      onPlaceOrder && onPlaceOrder({ product: p, mode: "solo", items: [{ name: p.name, price: p.soloPrice, qty: 1 }], total: p.soloPrice, paymentMethod: "cod", address: SD_DATA.user.address });
+      setCartCount && setCartCount(c => c + 1);
+      fireToast && fireToast({ icon: "✅", title: t("অর্ডার কনফার্ম", "Order confirmed"), sub: p.name });
+      pushAI({
+        reply: t(`✅ অর্ডার কনফার্ম! ${p.name} — ৳${p.soloPrice}, ক্যাশ অন ডেলিভারি। ঠিকানা: ${SD_DATA.user.address}।`, `✅ Order confirmed! ${p.name} — ৳${p.soloPrice}, cash on delivery to ${SD_DATA.user.address}.`),
+        card: { type: "order", product: p },
+      });
+    } else if (kind === "create") {
+      onPlaceOrder && onPlaceOrder({ product: p, mode: "leader", items: [{ name: p.name, price: p.groupPrice, qty: 1 }], total: p.groupPrice, paymentMethod: "cod", address: SD_DATA.user.address });
+      fireToast && fireToast({ icon: "🎉", title: t("গ্রুপ তৈরি হয়েছে", "Group created"), sub: p.name });
+      pushAI({
+        reply: t(`🎉 আপনি ${p.name}-এর নতুন গ্রুপ তৈরি করেছেন, আপনি এখন লিডার! আর ${p.groupSize - 1} জন হলেই সবাই ৳${p.soloPrice - p.groupPrice} করে বাঁচবে। বন্ধুদের শেয়ার করুন বা গ্রুপ চ্যাটে যান 👇`, `🎉 You started a group for ${p.name} — you're the leader! ${p.groupSize - 1} more and everyone saves ৳${p.soloPrice - p.groupPrice}. Share with friends or open the group chat 👇`),
+        card: { type: "group", product: p, group: sdAIGroupObj(p, "leader") },
+      });
+    } else if (kind === "join") {
+      const leader = sdMockLeader();
+      onPlaceOrder && onPlaceOrder({ product: p, mode: "join", joinLeader: leader, items: [{ name: p.name, price: p.groupPrice, qty: 1 }], total: p.groupPrice, paymentMethod: "cod", address: SD_DATA.user.address });
+      fireToast && fireToast({ icon: "✅", title: t("গ্রুপে যোগ দিলেন", "Joined group"), sub: p.name });
+      pushAI({
+        reply: t(`✅ ${leader}-এর গ্রুপে যোগ দিলেন! ${p.name} — ৳${p.groupPrice}। গ্রুপ চ্যাটে গিয়ে বাকিদের সাথে কথা বলুন 👇`, `✅ Joined ${leader}'s group! ${p.name} — ৳${p.groupPrice}. Hop into the group chat with the others 👇`),
+        card: { type: "group", product: p, group: sdAIGroupObj(p, "join", leader) },
+      });
+    }
+  };
+
+  const chips = [
+    t("আলুর দাম কত?", "potato price?"),
+    t("ইলিশ মাছের গ্রুপ আছে?", "any hilsa group?"),
+    t("পোলাও চাল অর্ডার করো", "order polao rice"),
+    t("আজকের অফার?", "today's offers?"),
+  ];
+
+  // ── Card renderers ──
+  const PriceCard = ({ p }) => {
+    const save = Math.max(0, p.soloPrice - p.groupPrice);
+    const canJoin = p.currentMembers > 0 && p.currentMembers < p.groupSize;
+    return (
+      <div style={{ background: "#fff", borderRadius: 14, padding: 12, marginTop: 6, border: "1px solid #E8E8E8", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <ProductPlaceholder w={46} h={46} name={p.name} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3 }}>{p.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: SD_COLORS.red }}>৳{p.groupPrice}</span>
+              <span style={{ fontSize: 11, color: SD_COLORS.muted, textDecoration: "line-through" }}>৳{p.soloPrice}</span>
+              <span style={{ fontSize: 9, fontWeight: 800, background: "#FFEBEE", color: SD_COLORS.red, borderRadius: 6, padding: "1px 6px" }}>৳{save} {t("সাশ্রয়", "off")}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: SD_COLORS.primaryLight, borderRadius: 10, padding: "7px 10px", marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: SD_COLORS.primary }}>👥 {p.currentMembers}/{p.groupSize}</span>
+          <div style={{ flex: 1, height: 5, background: "#fff", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ width: `${(p.currentMembers / p.groupSize) * 100}%`, height: "100%", background: SD_COLORS.primary }} />
+          </div>
+          <span style={{ fontSize: 10, color: SD_COLORS.primary, fontWeight: 600 }}>{t(`আর ${Math.max(1, p.groupSize - p.currentMembers)} জন`, `${Math.max(1, p.groupSize - p.currentMembers)} more`)}</span>
+        </div>
+        <div style={{ display: "flex", gap: 7 }}>
+          <button onClick={() => doAction("order", p)} style={btnGhost}>🛒 {t("একক অর্ডার", "Order solo")}<br /><span style={{ fontSize: 9, opacity: 0.7 }}>৳{p.soloPrice}</span></button>
+          <button onClick={() => doAction("create", p)} style={btnPrimary}>👥 {t("গ্রুপ বানাও", "Start group")}<br /><span style={{ fontSize: 9, opacity: 0.85 }}>৳{p.groupPrice}</span></button>
+          {canJoin && <button onClick={() => doAction("join", p)} style={btnGold}>➕ {t("যোগ দাও", "Join")}<br /><span style={{ fontSize: 9, opacity: 0.7 }}>৳{p.groupPrice}</span></button>}
+        </div>
+      </div>
+    );
+  };
+
+  const DealsCard = ({ items }) => (
+    <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
+      {items.map(p => (
+        <div key={p.id} onClick={() => send(t(`${p.name} দাম কত`, `${p.name} price`))} style={{ background: "#fff", borderRadius: 12, padding: "8px 10px", border: "1px solid #E8E8E8", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+          <ProductPlaceholder w={36} h={36} name={p.name} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>{p.name}</div>
+            <div style={{ fontSize: 11, color: SD_COLORS.red, fontWeight: 700 }}>৳{p.groupPrice} <span style={{ color: SD_COLORS.muted, fontSize: 9, textDecoration: "line-through", fontWeight: 400 }}>৳{p.soloPrice}</span></div>
+          </div>
+          <span style={{ fontSize: 16, color: SD_COLORS.primary }}>→</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  const OrderCard = ({ p }) => (
+    <div style={{ background: "#fff", borderRadius: 14, padding: 12, marginTop: 6, border: `1px solid ${SD_COLORS.primary}` }}>
+      <div style={{ fontSize: 11, color: SD_COLORS.muted, marginBottom: 8 }}>{t("ক্যাশ অন ডেলিভারি · এসক্রো সুরক্ষিত", "Cash on delivery · escrow protected")}</div>
+      <div style={{ display: "flex", gap: 7 }}>
+        <button onClick={() => onNav("tracking")} style={btnPrimary}>📍 {t("ট্র্যাক করুন", "Track order")}</button>
+        <button onClick={() => onNav("cart")} style={btnGhost}>🛒 {t("কার্ট", "View cart")}</button>
+      </div>
+    </div>
+  );
+
+  const GroupCard = ({ p, group }) => (
+    <div style={{ background: "#fff", borderRadius: 14, padding: 12, marginTop: 6, border: `1px solid ${SD_COLORS.primary}` }}>
+      <div style={{ fontSize: 11, color: SD_COLORS.muted, marginBottom: 8 }}>{group.role === "leader" ? t("আপনি এই গ্রুপের লিডার 👑", "You lead this group 👑") : t("আপনি এই গ্রুপের সদস্য", "You're a member of this group")}</div>
+      <div style={{ display: "flex", gap: 7 }}>
+        <button onClick={() => onNav("groupchat", group)} style={btnPrimary}>💬 {t("গ্রুপ চ্যাট", "Group chat")}</button>
+        <button onClick={() => onNav("mygroups")} style={btnGhost}>👥 {t("আমার গ্রুপ", "My Groups")}</button>
+      </div>
+    </div>
+  );
+
+  const HelpCard = () => (
+    <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>
+      {chips.map((c, i) => (
+        <div key={i} onClick={() => send(c)} style={{ background: "#fff", border: `1px solid ${SD_COLORS.primary}`, color: SD_COLORS.primary, borderRadius: 16, padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>{c}</div>
+      ))}
+    </div>
+  );
+
+  const renderCard = (card) => {
+    if (!card) return null;
+    if (card.type === "price") return <PriceCard p={card.product} />;
+    if (card.type === "deals") return <DealsCard items={card.items} />;
+    if (card.type === "order") return <OrderCard p={card.product} />;
+    if (card.type === "group") return <GroupCard p={card.product} group={card.group} />;
+    if (card.type === "help") return <HelpCard />;
+    return null;
+  };
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", background: "#EFEAE2", overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{ background: `linear-gradient(135deg, ${SD_COLORS.primary}, #00897B)`, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+        <div onClick={onBack} style={{ color: "#fff", fontSize: 22, cursor: "pointer" }}>←</div>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🤖</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>ShareDeal AI</div>
+          <div style={{ color: "rgba(255,255,255,0.8)", fontSize: 10 }}>🟢 {t("আপনার শপিং সহকারী · অনলাইন", "Your shopping assistant · online")}</div>
+        </div>
+        <LangToggle dark />
+      </div>
+
+      {/* Messages */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 12px" }}>
+        {messages.map(m => (
+          <div key={m.id} style={{ marginBottom: 12, display: "flex", flexDirection: "column", alignItems: m.role === "user" ? "flex-end" : "flex-start" }}>
+            <div style={{ display: "flex", gap: 7, maxWidth: "92%", flexDirection: m.role === "user" ? "row-reverse" : "row" }}>
+              {m.role === "ai" && <div style={{ width: 28, height: 28, borderRadius: "50%", background: SD_COLORS.primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, alignSelf: "flex-start" }}>🤖</div>}
+              <div style={{ background: m.role === "user" ? "#DCF8C6" : "#fff", borderRadius: 14, padding: "9px 12px", boxShadow: "0 1px 1px rgba(0,0,0,0.08)" }}>
+                <div style={{ fontSize: 13, color: "#1A1A1A", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{m.role === "user" ? m.text : m.reply}</div>
+              </div>
+            </div>
+            {m.role === "ai" && m.card && <div style={{ marginLeft: 35, width: "calc(92% - 35px)" }}>{renderCard(m.card)}</div>}
+          </div>
+        ))}
+        {typing && (
+          <div style={{ display: "flex", gap: 7, alignItems: "center", marginBottom: 12 }}>
+            <div style={{ width: 28, height: 28, borderRadius: "50%", background: SD_COLORS.primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>🤖</div>
+            <div style={{ background: "#fff", borderRadius: 14, padding: "10px 14px", display: "flex", gap: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#bbb", animation: "pulse 1s infinite" }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#bbb", animation: "pulse 1s infinite 0.2s" }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#bbb", animation: "pulse 1s infinite 0.4s" }} />
+            </div>
+          </div>
+        )}
+        <div ref={endRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{ padding: "8px 10px 24px", background: "#F0F0F0", display: "flex", gap: 8, alignItems: "center" }}>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder={t("যেমন: আলুর দাম কত?", "e.g. potato price?")} style={{ flex: 1, background: "#fff", border: "none", borderRadius: 22, padding: "11px 16px", fontSize: 13, fontFamily: "inherit", outline: "none" }} />
+        <div onClick={() => send()} style={{ width: 44, height: 44, borderRadius: "50%", background: SD_COLORS.primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer", flexShrink: 0 }}>➤</div>
+      </div>
+    </div>
+  );
+}
+// Shared button styles for the AI cards
+const btnPrimary = { flex: 1, background: SD_COLORS.primary, color: "#fff", border: "none", borderRadius: 10, padding: "8px 4px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", lineHeight: 1.3 };
+const btnGhost = { flex: 1, background: "#fff", color: SD_COLORS.primary, border: `1px solid ${SD_COLORS.primary}`, borderRadius: 10, padding: "8px 4px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", lineHeight: 1.3 };
+const btnGold = { flex: 1, background: "#FFD600", color: "#1A1A1A", border: "none", borderRadius: 10, padding: "8px 4px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", lineHeight: 1.3 };
+Object.assign(window, { AIChatScreen });
+
 // ShareDeal — Main App Router v2
 function ShareDealApp() {
   // ── Persistence ──────────────────────────────────────────────────────
@@ -6165,6 +6567,7 @@ function ShareDealApp() {
   const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [selectedProductType, setSelectedProductType] = React.useState("group");
   const [inviteProduct, setInviteProduct] = React.useState(null);
+  const [chatGroup, setChatGroup] = React.useState(null);
   const [selectedStream, setSelectedStream] = React.useState(null);
   const [selectedShop, setSelectedShop] = React.useState(null);
   const [bargainProduct, setBargainProduct] = React.useState(null);
@@ -6328,6 +6731,7 @@ function ShareDealApp() {
     if (s === "landing" && payload) setLandingKind(payload);
     if (s === "cart") setCartContext(payload || null); // payload may be a context object; null = ordinary cart
     if (s === "invite" && payload) setInviteProduct(payload); // allow product hand-off via navigate
+    if (s === "groupchat") setChatGroup(payload || null); // payload = the group whose chat we're opening; null = generic demo chat
     if (s === "tracking" && payload && payload.orderId) setTrackOrderId(payload.orderId);
     if (s === "shop" && payload && payload.shopName) setSelectedShop(payload.shopName);
     if (s === "tracking" && (!payload || !payload.orderId)) setTrackOrderId(null); // generic tracking, latest order
@@ -6374,7 +6778,7 @@ function ShareDealApp() {
     </div>
   );
 
-  const noBottomNav = ["product", "games", "invite", "cart", "livestream", "merchant", "shop", "bargain", "redenvelope", "orchard", "tracking", "landing", "groupchat", "wishlist", "returns", "leader", "foryou", "livecheckout", "mygroups", "subscriptions", "qa", "groupexpiry", "notifications"];
+  const noBottomNav = ["product", "games", "invite", "cart", "livestream", "merchant", "shop", "bargain", "redenvelope", "orchard", "tracking", "landing", "groupchat", "aichat", "wishlist", "returns", "leader", "foryou", "livecheckout", "mygroups", "subscriptions", "qa", "groupexpiry", "notifications"];
 
   const renderScreen = () => {
     switch (screen) {
@@ -6397,7 +6801,8 @@ function ShareDealApp() {
       case "orchard":  return <OrchardScreen onBack={() => goBack("home")} onNav={navigate} />;
       case "tracking": return <TrackingScreen onBack={() => goBack("profile")} onNav={navigate} orderId={trackOrderId} userOrders={appOrders} />;
       case "landing":  return <LandingScreen kind={landingKind} onBack={() => goBack("home")} onNav={navigate} />;
-      case "groupchat": return <GroupChatScreen onBack={() => goBack("home")} onNav={navigate} />;
+      case "groupchat": return <GroupChatScreen group={chatGroup} onBack={() => goBack("home")} onNav={navigate} />;
+      case "aichat": return <AIChatScreen onBack={() => goBack("home")} onNav={navigate} onPlaceOrder={placeOrder} setCartCount={setCartCount} />;
       case "wishlist": return <WishlistScreen onBack={() => goBack("profile")} onNav={navigate} onProduct={openProduct} />;
       case "returns":  return <ReturnsScreen onBack={() => goBack("profile")} onNav={navigate} />;
       case "leader":   return <LeaderScreen onBack={() => goBack("home")} onNav={navigate} />;
@@ -6423,6 +6828,12 @@ function ShareDealApp() {
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: SD_COLORS.bg, fontFamily: "'Hind Siliguri','Noto Sans Bengali',sans-serif", position: "relative", overflow: "hidden" }}>
       <ToastContainer />
       {renderScreen()}
+      {!noBottomNav.includes(screen) && (
+        <div onClick={() => navigate("aichat")} style={{ position: "absolute", right: 16, bottom: 92, zIndex: 120, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, background: `linear-gradient(135deg, ${SD_COLORS.primary}, #00897B)`, color: "#fff", borderRadius: 30, padding: "10px 16px 10px 12px", boxShadow: "0 6px 20px rgba(0,106,78,0.45)" }}>
+          <span style={{ fontSize: 22 }}>🤖</span>
+          <span style={{ fontSize: 12, fontWeight: 800 }}>ShareDeal AI</span>
+        </div>
+      )}
       {!noBottomNav.includes(screen) && (
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #EEE", display: "flex", zIndex: 100, paddingBottom: 20 }}>
           {tabs.map(tab => (
