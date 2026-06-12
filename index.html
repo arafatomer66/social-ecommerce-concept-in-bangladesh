@@ -631,7 +631,8 @@ const SD_DATA = {
     savings: 1840,
     avatar: null,
     address: "ধানমন্ডি, ঢাকা",
-    level: "সিলভার সদস্য"
+    level: "সিলভার সদস্য",
+    handle: "rafi_dhaka"
   },
   exploreProducts: [{
     id: "e1",
@@ -2571,6 +2572,54 @@ function HomeScreen({
       whiteSpace: "nowrap"
     }
   }, catLabels[c.id] || c.label))))), /*#__PURE__*/React.createElement("div", {
+    onClick: () => onNav("verified"),
+    style: {
+      margin: "4px 12px 0",
+      background: "linear-gradient(135deg,#0D47A1,#1976D2)",
+      borderRadius: 16,
+      padding: "12px 14px",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      boxShadow: "0 6px 16px rgba(13,71,161,0.22)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      background: "rgba(255,255,255,0.18)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 22,
+      flexShrink: 0
+    }
+  }, "\u2705"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0,
+      color: "#fff"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 800
+    }
+  }, t("আসল ব্র্যান্ড জোন", "Verified Brand Zone")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      opacity: 0.92,
+      marginTop: 1
+    }
+  }, t("১০০% আসল · নকল হলে টাকা ফেরত", "100% authentic · refund if fake"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 16,
+      color: "#fff",
+      fontWeight: 800
+    }
+  }, "\u2192")), /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#fff",
       marginTop: 8
@@ -3399,7 +3448,8 @@ function ProductScreen({
   onBargain,
   userGroups = [],
   userSubscriptions = [],
-  onSubscribe
+  onSubscribe,
+  friends = []
 }) {
   const lang = useLang();
   const all = [...SD_DATA.groupDeals, ...SD_DATA.flashDeals, ...SD_DATA.exploreProducts];
@@ -3848,6 +3898,49 @@ function ProductScreen({
         fontSize: 13
       }
     }, "\uD83D\uDD25"), t(`${recent} জন গত সপ্তাহে কিনেছেন`, `${recent} bought this last week`));
+  })(), friends && friends.length > 0 && (() => {
+    let s = 0;
+    for (let i = 0; i < (product.id || "x").length; i++) s = s * 31 + (product.id || "x").charCodeAt(i) >>> 0;
+    const n = Math.min(3, friends.length);
+    const picks = [];
+    for (let k = 0; k < n; k++) picks.push(friends[(s + k * 5) % friends.length]);
+    const names = picks.map(p => (p.name || "").split(" ")[0]).join(", ");
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 8,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        background: "#EEF6FF",
+        border: "1px solid #CFE3FB",
+        borderRadius: 12,
+        padding: "9px 12px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex"
+      }
+    }, picks.map((p, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      onClick: () => onNav && onNav("userprofile", p),
+      style: {
+        marginLeft: i ? -10 : 0,
+        borderRadius: "50%",
+        border: "2px solid #fff",
+        cursor: "pointer"
+      }
+    }, /*#__PURE__*/React.createElement(SDAvatar, {
+      name: p.name,
+      size: 28
+    })))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        fontSize: 11,
+        color: "#0D47A1",
+        fontWeight: 600,
+        lineHeight: 1.4
+      }
+    }, "\uD83D\uDC65 ", t(`${names} ${n > 1 ? "সহ " + n + " জন" : ""} — আপনি যাদের ফলো করেন তারা কিনেছেন`, `${names}${n > 1 ? ` +${n - 1} more` : ""} you follow bought this`)));
   })(), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 8,
@@ -7387,7 +7480,8 @@ function ProfileScreen({
   onBack,
   userOrders = [],
   userGroups = [],
-  onReplayIntro
+  onReplayIntro,
+  social = {}
 }) {
   const lang = useLang();
   const lowData = useLowData(); // subscribe so toggle updates immediately
@@ -7464,7 +7558,13 @@ function ProfileScreen({
       fontSize: 18,
       fontWeight: 800
     }
-  }, user.name), /*#__PURE__*/React.createElement("div", {
+  }, user.name), user.handle && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "rgba(255,255,255,0.7)",
+      fontSize: 11,
+      marginTop: 1
+    }
+  }, "@", user.handle), /*#__PURE__*/React.createElement("div", {
     style: {
       color: "rgba(255,255,255,0.75)",
       fontSize: 12,
@@ -7496,8 +7596,38 @@ function ProfileScreen({
   }, "\u270F\uFE0F")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
+      marginTop: 16,
+      background: "rgba(255,255,255,0.12)",
+      borderRadius: 14,
+      overflow: "hidden"
+    }
+  }, [[social.followers != null ? social.followers : 0, t("ফলোয়ার", "Followers"), () => onNav("connections", "followers")], [social.following != null ? social.following : 0, t("ফলোয়িং", "Following"), () => onNav("connections", "following")], [userGroups.length, t("গ্রুপ", "Groups"), () => onNav("mygroups")]].map(([val, label, go], i) => /*#__PURE__*/React.createElement("div", {
+    key: label,
+    onClick: go,
+    style: {
+      flex: 1,
+      textAlign: "center",
+      padding: "11px 4px",
+      cursor: "pointer",
+      borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.15)" : "none"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#fff",
+      fontSize: 17,
+      fontWeight: 800
+    }
+  }, val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "rgba(255,255,255,0.75)",
+      fontSize: 10,
+      marginTop: 1
+    }
+  }, label)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
       gap: 8,
-      marginTop: 16
+      marginTop: 10
     }
   }, [["🪙", user.coins, t("কয়েন", "Coins")], ["👥", user.referrals, t("রেফারেল", "Referrals")], ["💰", `৳${user.savings}`, t("সাশ্রয়", "Savings")]].map(([icon, val, label]) => /*#__PURE__*/React.createElement("div", {
     key: label,
@@ -9469,8 +9599,8 @@ function SocialScreen({
     }
   }];
   const goToUser = u => {
-    if (!u || !u.route) return;
-    if (u.route.kind === "product") onProduct(u.route.id, "group");else if (u.route.kind === "livestream") onNav("livestream");else if (u.route.kind === "games") onNav("games");
+    if (!u) return;
+    onNav("userprofile", u);
   };
   const feedItems = [{
     id: 1,
@@ -21009,6 +21139,1193 @@ Object.assign(window, {
   PayoutScreen
 });
 
+// ShareDeal — Public User Profile (a person's mini-storefront)
+// The hub the social graph points to: tap anyone (Social feed, Connections,
+// a group leader) → see their badges, trust stats, the groups they're running
+// that you can JOIN, and their reviews. Follow state uses the real app graph
+// (matched by name). Synthesized fields are deterministic from the name.
+function UserProfileScreen({
+  person,
+  following,
+  onToggleFollow,
+  onBack,
+  onNav
+}) {
+  const lang = useLang();
+  if (!person) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        background: SD_COLORS.bg
+      }
+    }, /*#__PURE__*/React.createElement(TopBar, {
+      title: t("প্রোফাইল", "Profile"),
+      onBack: onBack,
+      rightEl: /*#__PURE__*/React.createElement(LangToggle, null)
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: SD_COLORS.muted,
+        fontSize: 13
+      }
+    }, t("ইউজার পাওয়া যায়নি", "User not found")));
+  }
+  const name = person.name || person.user || t("ব্যবহারকারী", "User");
+  let seed = 0;
+  for (let i = 0; i < name.length; i++) seed = seed * 31 + name.charCodeAt(i) >>> 0;
+  const handle = person.handle || "user" + (seed % 9000 + 1000);
+  const area = person.area || t("ঢাকা", "Dhaka");
+  const badge = person.badge || [t("গ্রুপ লিডার", "Group Leader"), t("টপ বায়ার", "Top Buyer"), t("নিয়মিত ক্রেতা", "Regular Buyer")][seed % 3];
+  const completed = person.completed || person.deals || 8 + seed % 40;
+  const followersN = person.followers || 40 + seed % 360;
+  const followingN = 25 + seed % 180;
+  const rating = (4.2 + seed % 8 * 0.1).toFixed(1);
+  const success = 88 + seed % 12;
+  const savedFor = 600 + seed % 60 * 100;
+  const isFollowing = (following || []).some(u => u.name === name);
+
+  // Their open groups (storefront) — synth from real products, deterministic
+  const prods = (SD_DATA.flashDeals || []).filter(p => p.groupPrice);
+  const theirGroups = [0, 1].map(k => {
+    const p = prods[(seed + k) % prods.length];
+    const gs = p.groupSize || 3;
+    const jn = 1 + (seed + k * 7) % Math.max(1, gs - 1);
+    return {
+      g: {
+        id: `up-${name}-${k}`,
+        leader: name,
+        completed,
+        repeat: true,
+        joined: jn,
+        locTag: area,
+        expiresIn: 3600 * (1 + (seed + k) % 6)
+      },
+      product: p,
+      soloPrice: p.soloPrice || p.originalPrice,
+      groupPrice: p.groupPrice,
+      groupSize: gs,
+      currentMembers: jn
+    };
+  });
+  const reviews = [{
+    p: theirGroups[0].product.name,
+    r: 5,
+    txt: t("সময়মতো ডেলিভারি, দারুণ দাম!", "On-time delivery, great price!")
+  }, {
+    p: theirGroups[1].product.name,
+    r: 5,
+    txt: t("প্রতিবেশী হিসেবে পিকআপ খুব সহজ", "Pickup from a neighbour is so easy")
+  }];
+  const stat = (v, l) => /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: 800
+    }
+  }, v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "rgba(255,255,255,0.75)",
+      fontSize: 9.5,
+      marginTop: 1
+    }
+  }, l));
+  const card = {
+    background: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    margin: "10px 12px 0",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minHeight: 0,
+      display: "flex",
+      flexDirection: "column",
+      background: SD_COLORS.bg,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement(TopBar, {
+    title: t("প্রোফাইল", "Profile"),
+    onBack: onBack,
+    rightEl: /*#__PURE__*/React.createElement(LangToggle, null)
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minHeight: 0,
+      overflowY: "auto",
+      paddingBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: `linear-gradient(150deg,${SD_COLORS.primary},#00866A 60%,#00A878)`,
+      padding: "18px 16px 18px",
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      width: 170,
+      height: 170,
+      borderRadius: "50%",
+      background: "rgba(255,255,255,0.08)",
+      top: -70,
+      right: -50
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderRadius: "50%",
+      padding: 3,
+      background: "linear-gradient(135deg,#FFD600,#FFB300)",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderRadius: "50%",
+      border: "3px solid #fff"
+    }
+  }, /*#__PURE__*/React.createElement(SDAvatar, {
+    name: name,
+    size: 64
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0,
+      color: "#fff"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 800
+    }
+  }, name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      opacity: 0.8
+    }
+  }, "@", handle), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 5,
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 9,
+      fontWeight: 800,
+      background: "#FFD600",
+      color: "#5D4037",
+      padding: "2px 8px",
+      borderRadius: 8
+    }
+  }, "\uD83C\uDFC5 ", badge), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 10,
+      opacity: 0.9
+    }
+  }, "\uD83D\uDCCD ", area)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      marginTop: 14,
+      position: "relative"
+    }
+  }, stat(followersN, t("ফলোয়ার", "Followers")), stat(followingN, t("ফলোয়িং", "Following")), stat(completed, t("গ্রুপ", "Groups")), stat(`★${rating}`, t("রেটিং", "Rating"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginTop: 14,
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: () => onToggleFollow({
+      id: person.id || handle,
+      name,
+      handle,
+      area
+    }),
+    style: {
+      flex: 1,
+      textAlign: "center",
+      borderRadius: 12,
+      padding: "10px 0",
+      fontSize: 13,
+      fontWeight: 800,
+      cursor: "pointer",
+      background: isFollowing ? "rgba(255,255,255,0.18)" : "#FFD600",
+      color: isFollowing ? "#fff" : "#1A1A1A",
+      border: isFollowing ? "1px solid rgba(255,255,255,0.4)" : "none"
+    }
+  }, isFollowing ? `✓ ${t("ফলোয়িং", "Following")}` : `+ ${t("ফলো করুন", "Follow")}`), /*#__PURE__*/React.createElement("div", {
+    onClick: () => onNav("groupchat", null),
+    style: {
+      flex: 1,
+      textAlign: "center",
+      borderRadius: 12,
+      padding: "10px 0",
+      fontSize: 13,
+      fontWeight: 800,
+      cursor: "pointer",
+      background: "rgba(255,255,255,0.18)",
+      color: "#fff",
+      border: "1px solid rgba(255,255,255,0.4)"
+    }
+  }, "\uD83D\uDCAC ", t("মেসেজ", "Message")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      display: "flex",
+      gap: 8
+    }
+  }, [["✅", `${success}%`, t("সফল গ্রুপ", "Success rate")], ["💰", `৳${savedFor.toLocaleString()}`, t("সদস্যদের সাশ্রয়", "Saved for members")], ["🤝", completed, t("গ্রুপ চালিয়েছেন", "Groups led")]].map(([ic, v, l]) => /*#__PURE__*/React.createElement("div", {
+    key: l,
+    style: {
+      flex: 1,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18
+    }
+  }, ic), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 800,
+      marginTop: 2
+    }
+  }, v), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9,
+      color: SD_COLORS.muted,
+      marginTop: 1,
+      lineHeight: 1.2
+    }
+  }, l)))), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 800,
+      marginBottom: 10
+    }
+  }, "\uD83D\uDED2 ", t(`${name.split(" ")[0]}-এর চলমান গ্রুপ`, `${name.split(" ")[0]}'s open groups`)), theirGroups.map((tg, i) => {
+    const off = Math.round((1 - tg.groupPrice / tg.soloPrice) * 100);
+    const need = tg.groupSize - tg.g.joined;
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      onClick: () => onNav("groupdetail", tg),
+      style: {
+        display: "flex",
+        gap: 10,
+        alignItems: "center",
+        padding: "10px 0",
+        borderBottom: i < theirGroups.length - 1 ? "1px solid #F2F2F2" : "none",
+        cursor: "pointer"
+      }
+    }, /*#__PURE__*/React.createElement(ProductPlaceholder, {
+      w: 52,
+      h: 52,
+      name: tg.product.name,
+      id: tg.product.id,
+      radius: 10
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        fontWeight: 600,
+        lineHeight: 1.3
+      }
+    }, tg.product.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 6,
+        marginTop: 3
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 15,
+        fontWeight: 900,
+        color: SD_COLORS.primary
+      }
+    }, "\u09F3", tg.groupPrice), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: SD_COLORS.muted,
+        textDecoration: "line-through"
+      }
+    }, "\u09F3", tg.soloPrice), off > 0 && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 9,
+        fontWeight: 800,
+        color: SD_COLORS.red
+      }
+    }, "-", off, "%")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: "#E65100",
+        fontWeight: 600,
+        marginTop: 2
+      }
+    }, "\uD83D\uDD25 ", t(`আর ${need} জন দরকার`, `${need} more needed`))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: SD_COLORS.primary,
+        color: "#fff",
+        borderRadius: 18,
+        padding: "7px 14px",
+        fontSize: 12,
+        fontWeight: 800,
+        whiteSpace: "nowrap"
+      }
+    }, t("যোগ দিন", "Join")));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 800,
+      marginBottom: 10
+    }
+  }, "\u2B50 ", t("রিভিউ", "Reviews"), " \xB7 ", rating), reviews.map((rv, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      padding: "8px 0",
+      borderBottom: i < reviews.length - 1 ? "1px solid #F2F2F2" : "none"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#FFB300"
+    }
+  }, "★".repeat(rv.r), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: SD_COLORS.muted,
+      marginLeft: 6
+    }
+  }, rv.p)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#444",
+      marginTop: 2
+    }
+  }, rv.txt))))));
+}
+Object.assign(window, {
+  UserProfileScreen
+});
+
+// ShareDeal — Connections (social graph for social commerce)
+// Followers / Following / Blocked tabs with real follow-back, unfollow, block,
+// unblock. State is lifted to the app so counts on the Profile stay in sync.
+const SD_SOCIAL_SEED = {
+  following: [{
+    id: "u_nusrat",
+    name: "নুসরাত জাহান",
+    handle: "nusrat",
+    area: t("ধানমন্ডি", "Dhanmondi")
+  }, {
+    id: "u_karim",
+    name: "করিম উদ্দিন",
+    handle: "karim_u",
+    area: t("একই বিল্ডিং", "Same building")
+  }, {
+    id: "u_fatima",
+    name: "Fatima Rahman",
+    handle: "fatima_r",
+    area: t("কলাবাগান", "Kalabagan")
+  }, {
+    id: "u_rina",
+    name: "রিনা আক্তার",
+    handle: "rina_leader",
+    area: t("পাড়া নেতা", "Para leader")
+  }, {
+    id: "u_tania",
+    name: "তানিয়া বেগম",
+    handle: "tania",
+    area: t("জিগাতলা", "Zigatola")
+  }, {
+    id: "u_mahfuz",
+    name: "মাহফুজ ভাই",
+    handle: "mahfuz",
+    area: t("জিগাতলা", "Zigatola")
+  }, {
+    id: "u_rezaul",
+    name: "Rezaul Karim",
+    handle: "rezaul",
+    area: t("কলাবাগান", "Kalabagan")
+  }, {
+    id: "u_shahida",
+    name: "শাহিদা পারভীন",
+    handle: "shahida",
+    area: t("নিউমার্কেট", "New Market")
+  }],
+  followers: [{
+    id: "u_nusrat",
+    name: "নুসরাত জাহান",
+    handle: "nusrat",
+    area: t("ধানমন্ডি", "Dhanmondi")
+  }, {
+    id: "u_fatima",
+    name: "Fatima Rahman",
+    handle: "fatima_r",
+    area: t("কলাবাগান", "Kalabagan")
+  }, {
+    id: "u_rina",
+    name: "রিনা আক্তার",
+    handle: "rina_leader",
+    area: t("পাড়া নেতা", "Para leader")
+  }, {
+    id: "u_shahida",
+    name: "শাহিদা পারভীন",
+    handle: "shahida",
+    area: t("নিউমার্কেট", "New Market")
+  }, {
+    id: "u_sumon",
+    name: "সুমন আহমেদ",
+    handle: "sumon",
+    area: t("ধানমন্ডি", "Dhanmondi")
+  }, {
+    id: "u_nabila",
+    name: "নাবিলা ইসলাম",
+    handle: "nabila",
+    area: t("জিগাতলা", "Zigatola")
+  }, {
+    id: "u_arif",
+    name: "আরিফ হোসেন",
+    handle: "arif",
+    area: t("কলাবাগান", "Kalabagan")
+  }, {
+    id: "u_mita",
+    name: "মিতা রায়",
+    handle: "mita",
+    area: t("নিউমার্কেট", "New Market")
+  }, {
+    id: "u_rakib",
+    name: "রাকিব হাসান",
+    handle: "rakib",
+    area: t("ধানমন্ডি", "Dhanmondi")
+  }, {
+    id: "u_faria",
+    name: "ফারিয়া",
+    handle: "faria",
+    area: t("সায়েন্স ল্যাব", "Science Lab")
+  }, {
+    id: "u_touhid",
+    name: "তৌহিদ",
+    handle: "touhid",
+    area: t("ধানমন্ডি", "Dhanmondi")
+  }, {
+    id: "u_joynab",
+    name: "জয়নাব আক্তার",
+    handle: "joynab",
+    area: t("নিউমার্কেট", "New Market")
+  }],
+  blocked: [{
+    id: "u_spam",
+    name: "Spam Deals BD",
+    handle: "spam_deals",
+    area: t("রিপোর্ট করা হয়েছে", "Reported")
+  }]
+};
+function ConnectionsScreen({
+  onBack,
+  onNav,
+  initialTab,
+  followers,
+  following,
+  blocked,
+  onUnfollow,
+  onFollowBack,
+  onBlock,
+  onUnblock,
+  onOpenProfile
+}) {
+  const lang = useLang();
+  const [tab, setTab] = React.useState(initialTab || "followers");
+  const followingIds = new Set(following.map(u => u.id));
+  const tabs = [["followers", t("ফলোয়ার", "Followers"), followers.length], ["following", t("ফলোয়িং", "Following"), following.length], ["blocked", t("ব্লকড", "Blocked"), blocked.length]];
+  const list = tab === "followers" ? followers : tab === "following" ? following : blocked;
+  const Row = ({
+    u
+  }) => /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "11px 0",
+      borderBottom: "1px solid #F2F2F2"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: () => onOpenProfile && onOpenProfile(u),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      flex: 1,
+      minWidth: 0,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement(SDAvatar, {
+    name: u.name,
+    size: 46
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13.5,
+      fontWeight: 700,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    }
+  }, u.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: SD_COLORS.muted,
+      marginTop: 1
+    }
+  }, "@", u.handle, " \xB7 ", u.area), tab === "followers" && followingIds.has(u.id) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9.5,
+      color: SD_COLORS.primary,
+      fontWeight: 700,
+      marginTop: 2
+    }
+  }, "\uD83D\uDD01 ", t("পরস্পর ফলো", "Mutual")))), tab === "blocked" ? /*#__PURE__*/React.createElement("div", {
+    onClick: () => onUnblock(u.id),
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: SD_COLORS.primary,
+      border: `1.5px solid ${SD_COLORS.primary}`,
+      borderRadius: 18,
+      padding: "6px 14px",
+      cursor: "pointer"
+    }
+  }, t("আনব্লক", "Unblock")) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, tab === "following" ? /*#__PURE__*/React.createElement("div", {
+    onClick: () => onUnfollow(u.id),
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: SD_COLORS.text,
+      background: "#F0F0F0",
+      borderRadius: 18,
+      padding: "6px 14px",
+      cursor: "pointer"
+    }
+  }, t("ফলোয়িং ✓", "Following ✓")) : followingIds.has(u.id) ? /*#__PURE__*/React.createElement("div", {
+    onClick: () => onUnfollow(u.id),
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: SD_COLORS.text,
+      background: "#F0F0F0",
+      borderRadius: 18,
+      padding: "6px 14px",
+      cursor: "pointer"
+    }
+  }, t("ফলোয়িং ✓", "Following ✓")) : /*#__PURE__*/React.createElement("div", {
+    onClick: () => onFollowBack(u),
+    style: {
+      fontSize: 12,
+      fontWeight: 800,
+      color: "#fff",
+      background: SD_COLORS.primary,
+      borderRadius: 18,
+      padding: "6px 16px",
+      cursor: "pointer"
+    }
+  }, t("ফলো ব্যাক", "Follow back")), /*#__PURE__*/React.createElement("div", {
+    onClick: () => onBlock(u),
+    title: t("ব্লক", "Block"),
+    style: {
+      fontSize: 14,
+      color: SD_COLORS.muted,
+      cursor: "pointer",
+      padding: "4px 6px"
+    }
+  }, "\uD83D\uDEAB")));
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minHeight: 0,
+      display: "flex",
+      flexDirection: "column",
+      background: "#fff",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement(TopBar, {
+    title: t("সংযোগ", "Connections"),
+    onBack: onBack,
+    rightEl: /*#__PURE__*/React.createElement(LangToggle, null)
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      borderBottom: "1px solid #EEE",
+      flexShrink: 0
+    }
+  }, tabs.map(([id, lbl, n]) => /*#__PURE__*/React.createElement("div", {
+    key: id,
+    onClick: () => setTab(id),
+    style: {
+      flex: 1,
+      textAlign: "center",
+      padding: "12px 0",
+      cursor: "pointer",
+      borderBottom: tab === id ? `2.5px solid ${SD_COLORS.primary}` : "2.5px solid transparent"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: tab === id ? 800 : 600,
+      color: tab === id ? SD_COLORS.primary : SD_COLORS.muted
+    }
+  }, lbl), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: SD_COLORS.muted,
+      marginLeft: 5
+    }
+  }, n)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minHeight: 0,
+      overflowY: "auto",
+      padding: "0 16px"
+    }
+  }, list.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      color: SD_COLORS.muted,
+      fontSize: 13,
+      padding: "50px 20px"
+    }
+  }, tab === "blocked" ? t("কোনো ব্লকড ইউজার নেই 🎉", "No blocked users 🎉") : t("এখনো কেউ নেই", "No one here yet")) : list.map(u => /*#__PURE__*/React.createElement(Row, {
+    key: u.id,
+    u: u
+  })), tab !== "blocked" && /*#__PURE__*/React.createElement("div", {
+    onClick: () => onNav("invite"),
+    style: {
+      margin: "14px 0",
+      textAlign: "center",
+      background: SD_COLORS.primaryLight,
+      color: SD_COLORS.primary,
+      borderRadius: 12,
+      padding: "12px 0",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "\u2795 ", t("প্রতিবেশীদের খুঁজুন ও আমন্ত্রণ জানান", "Find & invite neighbours"))));
+}
+Object.assign(window, {
+  ConnectionsScreen
+});
+
+// ShareDeal — Verified Brand Zone (আসল ব্র্যান্ড জোন)
+// BD-adapted answer to Pinduoduo's subsidy/authenticity zone. Counterfeit &
+// adulterated FMCG (oil, milk powder, ghee, honey, baby care, cosmetics) is a
+// real trust problem here, so this zone leans hard on: sourced direct from the
+// brand / authorized distributor, money-back-if-fake, and an INTERACTIVE
+// authenticity check (enter/scan a batch code → verification result) so trust
+// is tangible, not just a badge. Brand names are illustrative/fictional.
+const SD_VERIFIED = [{
+  id: "vz1",
+  brand: "Shorisha Gold",
+  name: "সরিষার তেল ১ লিটার",
+  cat: "oil",
+  price: 210,
+  mrp: 260,
+  dist: t("অনুমোদিত পরিবেশক", "Authorized distributor")
+}, {
+  id: "vz2",
+  brand: "PureNutri",
+  name: "ফুল ক্রিম মিল্ক পাউডার ৫০০গ্রা",
+  cat: "milk",
+  price: 420,
+  mrp: 520,
+  dist: t("সরাসরি ব্র্যান্ড", "Direct from brand")
+}, {
+  id: "vz3",
+  brand: "Khaas Ghee",
+  name: "খাঁটি গাওয়া ঘি ৫০০গ্রা",
+  cat: "ghee",
+  price: 690,
+  mrp: 850,
+  dist: t("সরাসরি ব্র্যান্ড", "Direct from brand")
+}, {
+  id: "vz4",
+  brand: "Madhu Pure",
+  name: "প্রাকৃতিক মধু ৫০০গ্রা",
+  cat: "honey",
+  price: 480,
+  mrp: 600,
+  dist: t("অনুমোদিত পরিবেশক", "Authorized distributor")
+}, {
+  id: "vz5",
+  brand: "BabySoft",
+  name: "বেবি ডায়াপার মিডিয়াম ৪০টি",
+  cat: "baby",
+  price: 950,
+  mrp: 1150,
+  dist: t("সরাসরি ব্র্যান্ড", "Direct from brand")
+}, {
+  id: "vz6",
+  brand: "Origin Spice",
+  name: "খাঁটি হলুদ গুঁড়া ২০০গ্রা",
+  cat: "spice",
+  price: 95,
+  mrp: 130,
+  dist: t("ল্যাব-যাচাইকৃত", "Lab-verified")
+}];
+const SD_VZ_CATS = [["all", "🏷️", t("সব", "All")], ["oil", "🛢️", t("তেল", "Oil")], ["milk", "🥛", t("দুধ", "Milk")], ["ghee", "🧈", t("ঘি", "Ghee")], ["honey", "🍯", t("মধু", "Honey")], ["baby", "🍼", t("বেবি", "Baby")], ["spice", "🌶️", t("মসলা", "Spice")]];
+function VerifiedZoneScreen({
+  onBack,
+  onNav
+}) {
+  const lang = useLang();
+  const [cat, setCat] = React.useState("all");
+  const [checkedCards, setCheckedCards] = React.useState({}); // id -> true once "Verify" tapped
+  const [code, setCode] = React.useState("");
+  const [codeResult, setCodeResult] = React.useState(null); // null | {ok, batch}
+  const list = SD_VERIFIED.filter(p => cat === "all" || p.cat === cat);
+  const batchOf = id => "BD" + String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 7 + "X";
+  const runCheck = () => {
+    const c = code.trim();
+    if (!c) return;
+    setCodeResult({
+      ok: true,
+      batch: c.toUpperCase()
+    }); // demo: any code resolves authentic
+  };
+  const buy = p => onNav("cart", {
+    mode: "solo",
+    product: {
+      ...p,
+      soloPrice: p.price,
+      price: p.price
+    }
+  });
+  const pillars = [["🏭", t("সরাসরি ব্র্যান্ড", "Direct from brand"), t("কোনো মধ্যস্বত্বভোগী নেই", "No middlemen")], ["🔬", t("যাচাইকৃত ব্যাচ", "Verified batch"), t("প্রতিটি লট পরীক্ষিত", "Every lot checked")], ["💯", t("নকল হলে ফেরত", "Fake? Refund"), t("১০০% টাকা ফেরত", "100% money back")], ["📅", t("মেয়াদ গ্যারান্টি", "Freshness"), t("দীর্ঘ মেয়াদ নিশ্চিত", "Long expiry assured")]];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minHeight: 0,
+      display: "flex",
+      flexDirection: "column",
+      background: SD_COLORS.bg,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement(TopBar, {
+    title: `✅ ${t("আসল ব্র্যান্ড জোন", "Verified Brand Zone")}`,
+    onBack: onBack,
+    rightEl: /*#__PURE__*/React.createElement(LangToggle, null)
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minHeight: 0,
+      overflowY: "auto",
+      paddingBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "linear-gradient(150deg,#0D47A1 0%,#1565C0 55%,#1976D2 100%)",
+      padding: "16px 16px 20px",
+      color: "#fff",
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      width: 160,
+      height: 160,
+      borderRadius: "50%",
+      background: "rgba(255,255,255,0.08)",
+      top: -60,
+      right: -40
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 900,
+      position: "relative"
+    }
+  }, "\uD83D\uDCAF ", t("১০০% আসল পণ্য", "100% Authentic Goods")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      opacity: 0.92,
+      marginTop: 3,
+      position: "relative",
+      lineHeight: 1.5
+    }
+  }, t("সরাসরি ব্র্যান্ড ও অনুমোদিত পরিবেশক থেকে · নকল হলে পুরো টাকা ফেরত", "Sourced direct from brands & authorized distributors · full refund if counterfeit")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      background: "rgba(255,255,255,0.14)",
+      borderRadius: 14,
+      padding: 12,
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      marginBottom: 8
+    }
+  }, "\uD83D\uDD0E ", t("পণ্যের কোড যাচাই করুন", "Verify a product code")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: code,
+    onChange: e => {
+      setCode(e.target.value);
+      setCodeResult(null);
+    },
+    placeholder: t("প্যাকেটের কোড লিখুন", "Enter code on pack"),
+    style: {
+      flex: 1,
+      border: "none",
+      outline: "none",
+      borderRadius: 10,
+      padding: "10px 12px",
+      fontSize: 13,
+      fontFamily: "inherit"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    onClick: runCheck,
+    style: {
+      background: "#FFD600",
+      color: "#1A1A1A",
+      borderRadius: 10,
+      padding: "10px 16px",
+      fontSize: 13,
+      fontWeight: 800,
+      cursor: "pointer"
+    }
+  }, t("যাচাই", "Check"))), codeResult && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      background: "#fff",
+      color: "#1B5E20",
+      borderRadius: 10,
+      padding: "10px 12px",
+      fontSize: 12,
+      fontWeight: 700,
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 16
+    }
+  }, "\u2705"), /*#__PURE__*/React.createElement("span", null, t(`আসল পণ্য নিশ্চিত · ব্যাচ ${codeResult.batch}`, `Authentic confirmed · batch ${codeResult.batch}`))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      padding: "12px 14px 0"
+    }
+  }, pillars.map(([ic, ti, su]) => /*#__PURE__*/React.createElement("div", {
+    key: ti,
+    style: {
+      flex: 1,
+      background: "#fff",
+      borderRadius: 12,
+      padding: "10px 6px",
+      textAlign: "center",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20
+    }
+  }, ic), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9.5,
+      fontWeight: 800,
+      marginTop: 4,
+      lineHeight: 1.2
+    }
+  }, ti), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 8.5,
+      color: SD_COLORS.muted,
+      marginTop: 2,
+      lineHeight: 1.2
+    }
+  }, su)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      padding: "14px 14px 4px",
+      overflowX: "auto"
+    }
+  }, SD_VZ_CATS.map(([id, ic, lbl]) => /*#__PURE__*/React.createElement("div", {
+    key: id,
+    onClick: () => setCat(id),
+    style: {
+      flexShrink: 0,
+      padding: "7px 14px",
+      borderRadius: 20,
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      background: cat === id ? SD_COLORS.primary : "#fff",
+      color: cat === id ? "#fff" : SD_COLORS.text,
+      border: cat === id ? "none" : "1px solid #EEE"
+    }
+  }, ic, " ", lbl))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "8px 14px 0"
+    }
+  }, list.map(p => {
+    const checked = checkedCards[p.id];
+    const off = Math.round((1 - p.price / p.mrp) * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      key: p.id,
+      style: {
+        background: "#fff",
+        borderRadius: 14,
+        padding: 12,
+        marginBottom: 10,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 12
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "relative",
+        flexShrink: 0
+      }
+    }, /*#__PURE__*/React.createElement(ProductPlaceholder, {
+      w: 66,
+      h: 66,
+      name: p.name,
+      id: p.id,
+      radius: 12
+    }), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "absolute",
+        top: -6,
+        left: -6,
+        background: "#1565C0",
+        color: "#fff",
+        borderRadius: "50%",
+        width: 20,
+        height: 20,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 11,
+        border: "2px solid #fff"
+      }
+    }, "\u2713")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 12,
+        fontWeight: 800,
+        color: "#1565C0"
+      }
+    }, p.brand), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 8.5,
+        fontWeight: 800,
+        background: "#E3F2FD",
+        color: "#1565C0",
+        padding: "1px 6px",
+        borderRadius: 6
+      }
+    }, "\u2713 ", t("আসল", "VERIFIED"))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        fontWeight: 600,
+        marginTop: 2,
+        lineHeight: 1.3
+      }
+    }, p.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 9.5,
+        color: SD_COLORS.muted,
+        marginTop: 3
+      }
+    }, "\uD83C\uDFED ", p.dist), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "baseline",
+        gap: 8,
+        marginTop: 5
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 17,
+        fontWeight: 900,
+        color: SD_COLORS.primary
+      }
+    }, "\u09F3", p.price), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: SD_COLORS.muted,
+        textDecoration: "line-through"
+      }
+    }, "\u09F3", p.mrp), off > 0 && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 9,
+        fontWeight: 800,
+        background: SD_COLORS.red,
+        color: "#fff",
+        padding: "1px 5px",
+        borderRadius: 5
+      }
+    }, "-", off, "%")))), checked && /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 10,
+        background: "#E8F5E9",
+        borderRadius: 10,
+        padding: "9px 12px",
+        fontSize: 11,
+        color: "#1B5E20",
+        fontWeight: 600,
+        display: "flex",
+        alignItems: "center",
+        gap: 8
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 15
+      }
+    }, "\uD83D\uDEE1\uFE0F"), /*#__PURE__*/React.createElement("span", null, t(`আসল নিশ্চিত · ব্যাচ ${batchOf(p.id)} · ${p.brand}-এর সাথে যাচাইকৃত`, `Authentic · batch ${batchOf(p.id)} · verified with ${p.brand}`))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginTop: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      onClick: () => setCheckedCards(s => ({
+        ...s,
+        [p.id]: true
+      })),
+      style: {
+        flex: 1,
+        textAlign: "center",
+        border: `1.5px solid ${checked ? "#A5D6A7" : "#1565C0"}`,
+        color: checked ? "#2E7D32" : "#1565C0",
+        borderRadius: 10,
+        padding: "9px 0",
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: "pointer"
+      }
+    }, checked ? `✅ ${t("যাচাই হয়েছে", "Verified")}` : `🔎 ${t("আসল কিনা যাচাই", "Verify authenticity")}`), /*#__PURE__*/React.createElement("div", {
+      onClick: () => buy(p),
+      style: {
+        flex: 1,
+        textAlign: "center",
+        background: SD_COLORS.primary,
+        color: "#fff",
+        borderRadius: 10,
+        padding: "9px 0",
+        fontSize: 12,
+        fontWeight: 800,
+        cursor: "pointer"
+      }
+    }, t("কিনুন", "Buy"))));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: "6px 14px 0",
+      background: "#fff",
+      borderRadius: 14,
+      padding: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      fontWeight: 800,
+      marginBottom: 8
+    }
+  }, "\uD83D\uDD10 ", t("আমরা কীভাবে নিশ্চিত করি", "How we guarantee it")), [t("শুধু ব্র্যান্ড ও অনুমোদিত পরিবেশকের কাছ থেকে সংগ্রহ", "Sourced only from brands & authorized distributors"), t("প্রতিটি ব্যাচের কোড ও সিল যাচাই করা হয়", "Every batch code & seal is checked"), t("নকল প্রমাণিত হলে সম্পূর্ণ টাকা ফেরত + ব্র্যান্ডকে রিপোর্ট", "Proven fake → full refund + reported to the brand")].map((line, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      gap: 8,
+      fontSize: 11.5,
+      color: "#444",
+      marginBottom: 6,
+      lineHeight: 1.5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: SD_COLORS.primary,
+      fontWeight: 800
+    }
+  }, "\u2713"), /*#__PURE__*/React.createElement("span", null, line))), /*#__PURE__*/React.createElement("div", {
+    onClick: () => fireToast({
+      icon: "🚩",
+      title: t("রিপোর্ট গৃহীত", "Report received"),
+      message: t("আমরা ২৪ ঘণ্টায় যাচাই করব", "We'll investigate within 24h")
+    }),
+    style: {
+      marginTop: 8,
+      textAlign: "center",
+      border: "1.5px solid #E0E0E0",
+      color: SD_COLORS.muted,
+      borderRadius: 10,
+      padding: "9px 0",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "\uD83D\uDEA9 ", t("নকল পণ্যের রিপোর্ট করুন", "Report a counterfeit")))));
+}
+Object.assign(window, {
+  VerifiedZoneScreen
+});
+
 // ShareDeal — Group Detail v2 (join a neighbor's open group)
 // More engaging: gradient leader hero with rating + verified ring, live social
 // proof, savings-as-hero, a scarcity-driven "group filling" visual where your
@@ -21138,11 +22455,19 @@ function GroupDetailScreen({
       filter: "blur(6px)"
     }
   }), /*#__PURE__*/React.createElement("div", {
+    onClick: () => onNav("userprofile", {
+      name: g.leader,
+      area: g.locTag,
+      completed: g.completed,
+      repeat: g.repeat,
+      badge: t("গ্রুপ লিডার", "Group Leader")
+    }),
     style: {
       display: "flex",
       alignItems: "center",
       gap: 14,
-      position: "relative"
+      position: "relative",
+      cursor: "pointer"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21504,7 +22829,91 @@ function GroupDetailScreen({
       background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)",
       animation: "sdGdBar 1.8s infinite"
     }
-  })))), /*#__PURE__*/React.createElement("div", {
+  })))), (() => {
+    const step = Math.max(5, Math.round(grp * 0.1));
+    const tiers = [{
+      ppl: groupSize,
+      price: grp
+    }, {
+      ppl: groupSize + 2,
+      price: Math.max(1, grp - step)
+    }, {
+      ppl: groupSize + 5,
+      price: Math.max(1, grp - 2 * step),
+      best: true
+    }];
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...card,
+        background: "linear-gradient(135deg,#FFF8E1,#FFE082)",
+        border: "1px solid #FFD54F"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 12.5,
+        fontWeight: 800,
+        color: "#F57F17",
+        marginBottom: 10
+      }
+    }, "\uD83C\uDFAF ", t("যত বেশি সদস্য, সবার জন্য তত কম দাম", "More members, lower price for everyone")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 6
+      }
+    }, tiers.map((tr, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      style: {
+        flex: 1,
+        textAlign: "center",
+        borderRadius: 12,
+        padding: "10px 4px",
+        position: "relative",
+        background: tr.best ? "linear-gradient(135deg,#C62828,#E53935)" : i === 0 ? "#fff" : "rgba(255,255,255,0.6)",
+        border: i === 0 ? `2px solid ${SD_COLORS.primary}` : tr.best ? "2px solid #FFD600" : "1.5px dashed #FFB300"
+      }
+    }, tr.best && /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: "absolute",
+        top: -8,
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: "#FFD600",
+        color: "#1A1A1A",
+        fontSize: 8,
+        fontWeight: 800,
+        padding: "2px 6px",
+        borderRadius: 6,
+        whiteSpace: "nowrap"
+      }
+    }, "\uD83D\uDD25 ", t("সেরা", "BEST")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 9,
+        fontWeight: 700,
+        color: tr.best ? "#fff" : "#F57F17"
+      }
+    }, tr.ppl, " ", t("জন", "ppl")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 17,
+        fontWeight: 900,
+        marginTop: 2,
+        color: tr.best ? "#FFD600" : i === 0 ? SD_COLORS.primary : "#888"
+      }
+    }, "\u09F3", tr.price), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 8.5,
+        marginTop: 1,
+        color: tr.best ? "rgba(255,255,255,0.85)" : "#888"
+      }
+    }, t("সাশ্রয়", "save"), " \u09F3", Math.max(0, solo - tr.price))))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: "#8D6E00",
+        marginTop: 8,
+        textAlign: "center",
+        fontWeight: 600
+      }
+    }, t(`এখন ${joined}/${groupSize} — আরও সদস্য আনলে সবার দাম কমবে`, `Now ${joined}/${groupSize} — bring more members and everyone's price drops`)));
+  })(), /*#__PURE__*/React.createElement("div", {
     style: card
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -21904,6 +23313,33 @@ function ShareDealApp() {
   const [inviteProduct, setInviteProduct] = React.useState(null);
   const [chatGroup, setChatGroup] = React.useState(null);
   const [joinGroup, setJoinGroup] = React.useState(null);
+  const [following, setFollowing] = React.useState(() => loadPersisted("sd_following", SD_SOCIAL_SEED.following));
+  const [followers, setFollowers] = React.useState(() => loadPersisted("sd_followers", SD_SOCIAL_SEED.followers));
+  const [blocked, setBlocked] = React.useState(() => loadPersisted("sd_blocked", SD_SOCIAL_SEED.blocked));
+  const [connTab, setConnTab] = React.useState("followers");
+  React.useEffect(() => savePersisted("sd_following", following), [following]);
+  React.useEffect(() => savePersisted("sd_followers", followers), [followers]);
+  React.useEffect(() => savePersisted("sd_blocked", blocked), [blocked]);
+  const unfollowUser = id => setFollowing(f => f.filter(u => u.id !== id));
+  const followBackUser = u => setFollowing(f => f.some(x => x.id === u.id) ? f : [...f, u]);
+  const blockUser = u => {
+    setBlocked(b => b.some(x => x.id === u.id) ? b : [...b, u]);
+    setFollowers(f => f.filter(x => x.id !== u.id));
+    setFollowing(f => f.filter(x => x.id !== u.id));
+    fireToast && fireToast({
+      icon: "🚫",
+      title: t("ব্লক করা হয়েছে", "Blocked"),
+      message: u.name
+    });
+  };
+  const unblockUser = id => setBlocked(b => b.filter(u => u.id !== id));
+  const [profilePerson, setProfilePerson] = React.useState(null);
+  const toggleFollowPerson = person => setFollowing(f => f.some(u => u.name === person.name) ? f.filter(u => u.name !== person.name) : [...f, {
+    id: person.id || person.handle || person.name,
+    name: person.name,
+    handle: person.handle || "user",
+    area: person.area || ""
+  }]);
   const [selectedStream, setSelectedStream] = React.useState(null);
   const [selectedShop, setSelectedShop] = React.useState(null);
   const [bargainProduct, setBargainProduct] = React.useState(null);
@@ -22146,6 +23582,8 @@ function ShareDealApp() {
     if (s === "invite" && payload) setInviteProduct(payload); // allow product hand-off via navigate
     if (s === "groupchat") setChatGroup(payload || null); // payload = the group whose chat we're opening; null = generic demo chat
     if (s === "groupdetail") setJoinGroup(payload || null); // payload = { g, product, soloPrice, groupPrice, groupSize, currentMembers }
+    if (s === "connections" && payload) setConnTab(payload); // payload = "followers" | "following" | "blocked"
+    if (s === "userprofile" && payload) setProfilePerson(payload); // payload = a person object
     if (s === "tracking" && payload && payload.orderId) setTrackOrderId(payload.orderId);
     if (s === "shop" && payload && payload.shopName) setSelectedShop(payload.shopName);
     if (s === "tracking" && (!payload || !payload.orderId)) setTrackOrderId(null); // generic tracking, latest order
@@ -22197,7 +23635,7 @@ function ShareDealApp() {
   }, /*#__PURE__*/React.createElement(OnboardingScreen, {
     onDone: () => setOnboarded(true)
   }));
-  const noBottomNav = ["product", "games", "invite", "cart", "livestream", "merchant", "shop", "bargain", "redenvelope", "orchard", "tracking", "landing", "groupchat", "aichat", "budget", "payout", "wallet", "groupdetail", "wishlist", "returns", "leader", "foryou", "livecheckout", "mygroups", "subscriptions", "qa", "groupexpiry", "notifications"];
+  const noBottomNav = ["product", "games", "invite", "cart", "livestream", "merchant", "shop", "bargain", "redenvelope", "orchard", "tracking", "landing", "groupchat", "aichat", "budget", "payout", "wallet", "groupdetail", "verified", "connections", "userprofile", "wishlist", "returns", "leader", "foryou", "livecheckout", "mygroups", "subscriptions", "qa", "groupexpiry", "notifications"];
   const renderScreen = () => {
     switch (screen) {
       case "home":
@@ -22218,7 +23656,8 @@ function ShareDealApp() {
           onNav: navigate,
           userGroups: appGroups,
           userSubscriptions: appSubscriptions,
-          onSubscribe: subscribe
+          onSubscribe: subscribe,
+          friends: following
         });
       case "explore":
         return /*#__PURE__*/React.createElement(ExploreScreen, {
@@ -22245,7 +23684,11 @@ function ShareDealApp() {
           onBack: () => goBack("home"),
           userOrders: appOrders,
           userGroups: appGroups,
-          onReplayIntro: () => setOnboarded(false)
+          onReplayIntro: () => setOnboarded(false),
+          social: {
+            followers: followers.length,
+            following: following.length
+          }
         });
       case "games":
         return /*#__PURE__*/React.createElement(GamesScreen, {
@@ -22392,6 +23835,33 @@ function ShareDealApp() {
         return /*#__PURE__*/React.createElement(GroupDetailScreen, {
           data: joinGroup,
           onBack: () => goBack("product"),
+          onNav: navigate
+        });
+      case "verified":
+        return /*#__PURE__*/React.createElement(VerifiedZoneScreen, {
+          onBack: () => goBack("home"),
+          onNav: navigate
+        });
+      case "connections":
+        return /*#__PURE__*/React.createElement(ConnectionsScreen, {
+          onBack: () => goBack("profile"),
+          onNav: navigate,
+          initialTab: connTab,
+          followers: followers,
+          following: following,
+          blocked: blocked,
+          onUnfollow: unfollowUser,
+          onFollowBack: followBackUser,
+          onBlock: blockUser,
+          onUnblock: unblockUser,
+          onOpenProfile: p => navigate("userprofile", p)
+        });
+      case "userprofile":
+        return /*#__PURE__*/React.createElement(UserProfileScreen, {
+          person: profilePerson,
+          following: following,
+          onToggleFollow: toggleFollowPerson,
+          onBack: () => goBack("home"),
           onNav: navigate
         });
       case "notifications":
